@@ -5,18 +5,30 @@ from flask import jsonify
 from datetime import date, timedelta
 from datetime import date, timedelta
 from datetime import datetime
+import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, session
 
-RUTA_DB = "datos.db"
+
 app = Flask(__name__)
 
 # Agregar una clave secreta para manejar la sesión
 app.secret_key = 'tu_clave_secreta'  # Cambia 'tu_clave_secreta' por algo más seguro
 
+#SUBABASE
+SUPABASE_URI = "postgresql://postgres:aeaxdderivada@db.iyulfnxxhxgxlumsgsly.supabase.co:5432/postgres"
 def get_db_connection():
-    conn = sqlite3.connect(RUTA_DB)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(SUPABASE_URI)
     return conn
+
+#LOCALMENTE
+# RUTA_DB = "datos.db"
+# import sqlite3
+# def get_db_connection():
+#     conn = sqlite3.connect(RUTA_DB)
+#     conn.row_factory = sqlite3.Row
+#     return conn
+
+
 
 @app.route("/", methods=["GET"])
 def inicio():
@@ -46,11 +58,20 @@ def nueva_cita():
         else:
             try:
                 conn = get_db_connection()
+                #SUBABASE:
+
                 conn.execute(
-                    "INSERT INTO citas (Paciente, Motivo, Celular, Fecha, Hora, Doctor) "
-                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO citas (Paciente, Motivo, Celular, Fecha, Hora, Doctor) VALUES (%s, %s, %s, %s, %s, %s)",
                     (paciente, motivo, celular, fecha, hora, doctor)
                 )
+
+                #LOCALMENTE
+
+                # conn.execute(
+                #     "INSERT INTO citas (Paciente, Motivo, Celular, Fecha, Hora, Doctor) "
+                #     "VALUES (?, ?, ?, ?, ?, ?)",
+                #     (paciente, motivo, celular, fecha, hora, doctor)
+                # )
                 conn.commit()
                 conn.close()
                 flash("Cita guardada exitosamente.", "success")
@@ -81,10 +102,19 @@ def nueva_cita():
     citas_ocup = []
     if fecha_sel and doctor_sel:
         conn2 = get_db_connection()
+        #SUBABASE:
+
         filas = conn2.execute(
-            "SELECT Hora FROM citas WHERE Fecha = ? AND Doctor = ?",
+            "SELECT Hora FROM citas WHERE Fecha = %s AND Doctor = %s",
             (fecha_sel, doctor_sel)
         ).fetchall()
+
+        #LOCALMENTE
+
+        # filas = conn2.execute(
+        #     "SELECT Hora FROM citas WHERE Fecha = ? AND Doctor = ?",
+        #     (fecha_sel, doctor_sel)
+        # ).fetchall()
         conn2.close()
         citas_ocup = [f["Hora"] for f in filas]
 
@@ -108,11 +138,18 @@ def autocomplete_paciente():
     if not q:
         return jsonify([])
     conn = get_db_connection()
-    # COLLATE NOCASE hace la búsqueda case‑insensitive
+    #SUBASE:
     filas = conn.execute(
-        "SELECT nombre FROM historia_clinica WHERE nombre LIKE ? || '%' COLLATE NOCASE ORDER BY nombre",
-        (q,)
+    "SELECT nombre FROM historia_clinica WHERE nombre ILIKE %s ORDER BY nombre",
+        (q + '%',)
     ).fetchall()
+
+    #LOCALMENTE
+    # COLLATE NOCASE hace la búsqueda case‑insensitive
+    # filas = conn.execute(
+    #     "SELECT nombre FROM historia_clinica WHERE nombre LIKE ? || '%' COLLATE NOCASE ORDER BY nombre",
+    #     (q,)
+    # ).fetchall()
     conn.close()
     return jsonify([f["nombre"] for f in filas])
 
@@ -122,10 +159,17 @@ def telefono_paciente():
     if not nombre:
         return jsonify({"telefono": ""})
     conn = get_db_connection()
+    #SUBABASE:
     fila = conn.execute(
-        "SELECT telefono FROM historia_clinica WHERE nombre = ? COLLATE NOCASE",
+        "SELECT telefono FROM historia_clinica WHERE nombre ILIKE %s",
         (nombre,)
     ).fetchone()
+
+    #LOCALMENTE
+    # fila = conn.execute(
+    #     "SELECT telefono FROM historia_clinica WHERE nombre = ? COLLATE NOCASE",
+    #     (nombre,)
+    # ).fetchone()
     conn.close()
     return jsonify({"telefono": fila["telefono"] if fila else ""})
 
@@ -136,10 +180,17 @@ def horas_ocupadas():
     if not fecha or not doctor:
         return jsonify([])
     conn = get_db_connection()
+    #SUBABASE:
     filas = conn.execute(
-        "SELECT Hora FROM citas WHERE Fecha = ? AND Doctor = ?",
+        "SELECT Hora FROM citas WHERE Fecha = %s AND Doctor = %s",
         (fecha, doctor)
     ).fetchall()
+
+    #LOCALMENTE:
+    # filas = conn.execute(
+    #     "SELECT Hora FROM citas WHERE Fecha = ? AND Doctor = ?",
+    #     (fecha, doctor)
+    # ).fetchall()
     conn.close()
     return jsonify([f["Hora"] for f in filas])
 
@@ -184,13 +235,23 @@ def ver_citas():
     conn = get_db_connection()
 
     # Obtener citas de la semana con datos de doctor
+    #SUBABASE:
     filas = conn.execute(
         "SELECT citas.id, citas.Fecha, citas.Hora, citas.Motivo, citas.Celular, citas.Doctor, citas.Paciente, doctores.color "
         "FROM citas "
         "JOIN doctores ON citas.Doctor = doctores.doctores "
-        "WHERE citas.Fecha BETWEEN ? AND ?",
+        "WHERE citas.Fecha BETWEEN %s AND %s",
         (start_of_week, end_of_week)
     ).fetchall()
+
+    #LOCALEMNTE
+    # filas = conn.execute(
+    #     "SELECT citas.id, citas.Fecha, citas.Hora, citas.Motivo, citas.Celular, citas.Doctor, citas.Paciente, doctores.color "
+    #     "FROM citas "
+    #     "JOIN doctores ON citas.Doctor = doctores.doctores "
+    #     "WHERE citas.Fecha BETWEEN ? AND ?",
+    #     (start_of_week, end_of_week)
+    # ).fetchall()
 
     # Consultar número total de doctores en la tabla doctores
     total_doctores = conn.execute("SELECT COUNT(*) FROM doctores").fetchone()[0]
@@ -281,10 +342,16 @@ def editar_cita():
     nueva_fecha = request.form['fecha']
     nueva_hora  = request.form['hora']
     conn = get_db_connection()
+    #SUBABASE:
     conn.execute(
-        "UPDATE citas SET Fecha = ?, Hora = ? WHERE id = ?",
+        "UPDATE citas SET Fecha = %s, Hora = %s WHERE id = %s",
         (nueva_fecha, nueva_hora, id_cita)
     )
+    #LOCALMENTE
+    # conn.execute(
+    #     "UPDATE citas SET Fecha = ?, Hora = ? WHERE id = ?",
+    #     (nueva_fecha, nueva_hora, id_cita)
+    # )
     conn.commit()
     conn.close()
     flash('Cita reprogramada correctamente', 'success')
@@ -294,7 +361,11 @@ def editar_cita():
 def eliminar_cita():
     id_cita = request.form['id']
     conn = get_db_connection()
-    conn.execute("DELETE FROM citas WHERE id = ?", (id_cita,))
+    #SUBABASE:
+    conn.execute("DELETE FROM citas WHERE id = %s", (id_cita,))
+
+    #LOCALMENTE 
+    # conn.execute("DELETE FROM citas WHERE id = ?", (id_cita,))
     conn.commit()
     conn.close()
     flash('Cita cancelada', 'warning')
