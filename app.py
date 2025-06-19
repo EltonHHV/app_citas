@@ -55,7 +55,7 @@ def nueva_cita():
                 conn.close()
                 flash("Cita guardada exitosamente.", "success")
                 # Redirigir para limpiar formulario y evitar repost
-                return redirect(url_for("nueva_cita"))
+                return redirect(url_for("ver_citas"))
             except sqlite3.Error as e:
                 flash(f"Error al guardar la cita: {e}", "danger")
 
