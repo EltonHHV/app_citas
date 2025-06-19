@@ -110,12 +110,9 @@ def nueva_cita():
     citas_ocup = []
     if fecha_sel and doctor_sel:
         conn2 = get_db_connection()
-
         #SUBABASE:
-        filas = conn2.execute(
-            "SELECT Hora FROM citas WHERE Fecha = %s AND Doctor = %s",
-            (fecha_sel, doctor_sel)
-        ).fetchall()
+        # Reemplazar con la consulta usando Supabase
+        filas = conn2.table('citas').select('Hora').eq('Fecha', fecha_sel).eq('Doctor', doctor_sel).execute().data
 
         #LOCALMENTE
 
@@ -123,7 +120,7 @@ def nueva_cita():
         #     "SELECT Hora FROM citas WHERE Fecha = ? AND Doctor = ?",
         #     (fecha_sel, doctor_sel)
         # ).fetchall()
-        conn2.close()
+        # conn2.close()
         citas_ocup = [f["Hora"] for f in filas]
 
     hoy = date.today().isoformat()
@@ -147,18 +144,14 @@ def autocomplete_paciente():
         return jsonify([])
     conn = get_db_connection()
     #SUBASE:
-    filas = conn.execute(
-    "SELECT nombre FROM historia_clinica WHERE nombre ILIKE %s ORDER BY nombre",
-        (q + '%',)
-    ).fetchall()
-
+    filas = conn.table('historia_clinica').select('nombre').ilike('nombre', f'{q}%').order('nombre').execute().data
     #LOCALMENTE
     # COLLATE NOCASE hace la búsqueda case‑insensitive
     # filas = conn.execute(
     #     "SELECT nombre FROM historia_clinica WHERE nombre LIKE ? || '%' COLLATE NOCASE ORDER BY nombre",
     #     (q,)
     # ).fetchall()
-    conn.close()
+    # conn.close()
     return jsonify([f["nombre"] for f in filas])
 
 @app.route("/telefono_paciente")
@@ -168,17 +161,13 @@ def telefono_paciente():
         return jsonify({"telefono": ""})
     conn = get_db_connection()
     #SUBABASE:
-    fila = conn.execute(
-        "SELECT telefono FROM historia_clinica WHERE nombre ILIKE %s",
-        (nombre,)
-    ).fetchone()
-
+    fila = conn.table('historia_clinica').select('telefono').ilike('nombre', nombre).execute().data
     #LOCALMENTE
     # fila = conn.execute(
     #     "SELECT telefono FROM historia_clinica WHERE nombre = ? COLLATE NOCASE",
     #     (nombre,)
     # ).fetchone()
-    conn.close()
+    # conn.close()
     return jsonify({"telefono": fila["telefono"] if fila else ""})
 
 @app.route("/horas_ocupadas")
@@ -189,17 +178,14 @@ def horas_ocupadas():
         return jsonify([])
     conn = get_db_connection()
     #SUBABASE:
-    filas = conn.execute(
-        "SELECT Hora FROM citas WHERE Fecha = %s AND Doctor = %s",
-        (fecha, doctor)
-    ).fetchall()
+    filas = conn.table('citas').select('Hora').eq('Fecha', fecha).eq('Doctor', doctor).execute().data
 
     #LOCALMENTE:
     # filas = conn.execute(
     #     "SELECT Hora FROM citas WHERE Fecha = ? AND Doctor = ?",
     #     (fecha, doctor)
     # ).fetchall()
-    conn.close()
+    # conn.close()
     return jsonify([f["Hora"] for f in filas])
 
 
@@ -244,13 +230,12 @@ def ver_citas():
 
     # Obtener citas de la semana con datos de doctor
     #SUBABASE:
-    filas = conn.execute(
-        "SELECT citas.id, citas.Fecha, citas.Hora, citas.Motivo, citas.Celular, citas.Doctor, citas.Paciente, doctores.color "
-        "FROM citas "
-        "JOIN doctores ON citas.Doctor = doctores.doctores "
-        "WHERE citas.Fecha BETWEEN %s AND %s",
-        (start_of_week, end_of_week)
-    ).fetchall()
+    filas = conn.table('citas').select('citas.id', 'citas.Fecha', 'citas.Hora', 'citas.Motivo', 'citas.Celular', 'citas.Doctor', 'citas.Paciente', 'doctores.color') \
+        .join('doctores', 'citas.Doctor', 'doctores.doctores') \
+        .gte('Fecha', start_of_week).lte('Fecha', end_of_week).execute().data
+
+    total_doctores = len(conn.table('doctores').select('*').execute().data)
+    doctores_leyenda = {d['doctores']: d['color'] for d in conn.table('doctores').select('doctores, color').execute().data}
 
     #LOCALEMNTE
     # filas = conn.execute(
@@ -260,14 +245,11 @@ def ver_citas():
     #     "WHERE citas.Fecha BETWEEN ? AND ?",
     #     (start_of_week, end_of_week)
     # ).fetchall()
-
-    # Consultar número total de doctores en la tabla doctores
-    total_doctores = conn.execute("SELECT COUNT(*) FROM doctores").fetchone()[0]
-
-    # Obtener todos los doctores y colores de la tabla doctores para la leyenda
-    doctores_leyenda = dict(conn.execute("SELECT doctores, color FROM doctores").fetchall())
-
-    conn.close()
+    # # Consultar número total de doctores en la tabla doctores
+    # total_doctores = conn.execute("SELECT COUNT(*) FROM doctores").fetchone()[0]
+    # # Obtener todos los doctores y colores de la tabla doctores para la leyenda
+    # doctores_leyenda = dict(conn.execute("SELECT doctores, color FROM doctores").fetchall())
+    # conn.close()
 
     # Agrupar citas y obtener diccionario doctores que tienen citas
     ocupadas = {}
