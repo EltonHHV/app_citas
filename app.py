@@ -48,6 +48,10 @@ def nueva_cita():
         fecha = request.form.get("fecha", "").strip()
         hora = request.form.get("hora", "").strip()
 
+        # Asistencia predeterminada
+        asistencia = False  # Si no se proporciona un valor, asumimos que la cita no fue atendida
+
+
         # Validaciones
         if not (paciente and motivo and celular and fecha and hora):
             flash("Todos los campos obligatorios deben estar completados.", "warning")
@@ -63,7 +67,8 @@ def nueva_cita():
                     'Celular': celular,
                     'Fecha': fecha,
                     'Hora': hora,
-                    'Doctor': doctor
+                    'Doctor': doctor,
+                    'Asistencia': asistencia  # Asignamos el valor de Asistencia (por defecto: False)
                 }).execute()
                 #LOCALMENTE
                 # conn.execute(
@@ -164,14 +169,25 @@ def telefono_paciente():
         return jsonify({"telefono": ""})
     conn = get_db_connection()
     #SUBABASE:
-    fila = conn.table('historia_clinica').select('telefono').ilike('nombre', nombre).execute().data
+    # Obtener el teléfono de la base de datos (Supabase)
+    filas = conn.table('historia_clinica').select('telefono').ilike('nombre', nombre).execute().data
+
+    # Si se encuentra un registro, devuelve el teléfono, si no, devuelve una cadena vacía
+    if filas:
+        # Asumiendo que "filas" es una lista, toma el primer registro
+        fila = filas[0]
+        return jsonify({"telefono": fila["telefono"] if fila.get("telefono") else ""})
+    
+    # Si no hay resultados, devolver vacío
+    return jsonify({"telefono": ""})
+
     #LOCALMENTE
     # fila = conn.execute(
     #     "SELECT telefono FROM historia_clinica WHERE nombre = ? COLLATE NOCASE",
     #     (nombre,)
     # ).fetchone()
     # conn.close()
-    return jsonify({"telefono": fila["telefono"] if fila else ""})
+    # return jsonify({"telefono": fila["telefono"] if fila else ""})
 
 @app.route("/horas_ocupadas")
 def horas_ocupadas():
@@ -333,15 +349,6 @@ def ver_citas():
         hoy=hoy,
         timedelta=timedelta
     )
-
-
-
-
-
-
-
-
-
 
 @app.route('/editar_cita', methods=['POST'])
 def editar_cita():
