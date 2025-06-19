@@ -14,20 +14,18 @@ app = Flask(__name__)
 # Agregar una clave secreta para manejar la sesión
 app.secret_key = 'tu_clave_secreta'  # Cambia 'tu_clave_secreta' por algo más seguro
 
-#SUBABASE
-SUPABASE_URI = "postgresql://postgres:aeaxdderivada@db.iyulfnxxhxgxlumsgsly.supabase.co:5432/postgres"
+from supabase import create_client, Client
+
+# URL de tu proyecto Supabase y tu clave pública (anon key)
+SUPABASE_URL = "https://iyulfnxxhxgxlumsgsly.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5dWxmbnh4aHhneGx1bXNnc2x5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNjIzOTcsImV4cCI6MjA2NTkzODM5N30.ZCvtfSU_fRv5UtCOf-9pQoulu1RVjYpfZRy2FD_-_N4"
+
+# Crear cliente de Supabase
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Método para interactuar con la base de datos
 def get_db_connection():
-    conn = psycopg2.connect(SUPABASE_URI)
-    return conn
-
-#LOCALMENTE
-# RUTA_DB = "datos.db"
-# import sqlite3
-# def get_db_connection():
-#     conn = sqlite3.connect(RUTA_DB)
-#     conn.row_factory = sqlite3.Row
-#     return conn
-
+    return supabase  # Retorna el cliente de Supabase para usarlo en las consultas
 
 
 @app.route("/", methods=["GET"])
@@ -59,21 +57,22 @@ def nueva_cita():
             try:
                 conn = get_db_connection()
                 #SUBABASE:
-
-                conn.execute(
-                    "INSERT INTO citas (Paciente, Motivo, Celular, Fecha, Hora, Doctor) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (paciente, motivo, celular, fecha, hora, doctor)
-                )
-
+                supabase.table('citas').insert({
+                    'Paciente': paciente,
+                    'Motivo': motivo,
+                    'Celular': celular,
+                    'Fecha': fecha,
+                    'Hora': hora,
+                    'Doctor': doctor
+                }).execute()
                 #LOCALMENTE
-
                 # conn.execute(
                 #     "INSERT INTO citas (Paciente, Motivo, Celular, Fecha, Hora, Doctor) "
                 #     "VALUES (?, ?, ?, ?, ?, ?)",
                 #     (paciente, motivo, celular, fecha, hora, doctor)
                 # )
-                conn.commit()
-                conn.close()
+                # conn.commit()
+                # conn.close()
                 flash("Cita guardada exitosamente.", "success")
                 # Redirigir para limpiar formulario y evitar repost
                 return redirect(url_for("ver_citas"))
@@ -81,17 +80,26 @@ def nueva_cita():
                 flash(f"Error al guardar la cita: {e}", "danger")
 
     # Cargar datos para el formulario
-    conn = get_db_connection()
-    pacientes = conn.execute(
-        "SELECT DISTINCT nombre FROM historia_clinica ORDER BY nombre"
-    ).fetchall()
-    doctores = conn.execute(
-        "SELECT id, doctores FROM doctores"
-    ).fetchall()
-    motivos = conn.execute(
-        "SELECT id, descripcion FROM motivoconsulta"
-    ).fetchall()
-    conn.close()
+
+    #SUBABASE:
+    conn = get_db_connection()  # Obtener la conexión de Supabase
+    pacientes = conn.table('historia_clinica').select('nombre').distinct().execute().data
+    doctores = conn.table('doctores').select('id, doctores').execute().data
+    motivos = conn.table('motivoconsulta').select('id, descripcion').execute().data
+
+
+    #LOCALMENTE:
+    # conn = get_db_connection()
+    # pacientes = conn.execute(
+    #     "SELECT DISTINCT nombre FROM historia_clinica ORDER BY nombre"
+    # ).fetchall()
+    # doctores = conn.execute(
+    #     "SELECT id, doctores FROM doctores"
+    # ).fetchall()
+    # motivos = conn.execute(
+    #     "SELECT id, descripcion FROM motivoconsulta"
+    # ).fetchall()
+    # conn.close()
 
     # Seleccionar el primer doctor como valor por defecto si no se seleccionó ninguno
     doctor_default = doctores[0]['doctores'] if doctores else ''
@@ -102,8 +110,8 @@ def nueva_cita():
     citas_ocup = []
     if fecha_sel and doctor_sel:
         conn2 = get_db_connection()
-        #SUBABASE:
 
+        #SUBABASE:
         filas = conn2.execute(
             "SELECT Hora FROM citas WHERE Fecha = %s AND Doctor = %s",
             (fecha_sel, doctor_sel)
@@ -343,17 +351,17 @@ def editar_cita():
     nueva_hora  = request.form['hora']
     conn = get_db_connection()
     #SUBABASE:
-    conn.execute(
-        "UPDATE citas SET Fecha = %s, Hora = %s WHERE id = %s",
-        (nueva_fecha, nueva_hora, id_cita)
-    )
+    conn.table('citas').update({
+        'Fecha': nueva_fecha,
+        'Hora': nueva_hora
+    }).eq('id', id_cita).execute()
     #LOCALMENTE
     # conn.execute(
     #     "UPDATE citas SET Fecha = ?, Hora = ? WHERE id = ?",
     #     (nueva_fecha, nueva_hora, id_cita)
     # )
-    conn.commit()
-    conn.close()
+    # conn.commit()
+    # conn.close()
     flash('Cita reprogramada correctamente', 'success')
     return redirect(url_for('ver_citas'))
 
@@ -362,12 +370,12 @@ def eliminar_cita():
     id_cita = request.form['id']
     conn = get_db_connection()
     #SUBABASE:
-    conn.execute("DELETE FROM citas WHERE id = %s", (id_cita,))
+    conn.table('citas').delete().eq('id', id_cita).execute()
 
     #LOCALMENTE 
     # conn.execute("DELETE FROM citas WHERE id = ?", (id_cita,))
-    conn.commit()
-    conn.close()
+    # conn.commit()
+    # conn.close()
     flash('Cita cancelada', 'warning')
     return redirect(url_for('ver_citas'))
 
