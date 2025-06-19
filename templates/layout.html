@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>App Citas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      /* Asegurarse de que los botones se distribuyan correctamente */
+      .nav-buttons {
+        display: flex;
+        justify-content: space-between; /* Alinea los botones a los extremos */
+        gap: 10px; /* Espacio entre los botones */
+      }
+
+      /* Ajuste de botones en pantallas pequeñas */
+      @media (max-width: 768px) {
+        .nav-buttons {
+          flex-direction: row; /* Los botones estarán en fila en pantallas pequeñas */
+          justify-content: space-between; /* Los botones se alinean uno a la izquierda y el otro a la derecha */
+        }
+        .nav-buttons .btn {
+          flex: 1; /* Los botones ocupan el 50% del ancho */
+        }
+      }
+    </style>
+  </head>
+  <body class="p-4">
+    <!-- Barra de navegación -->
+    <nav class="mb-4">
+      <div class="nav-buttons">
+        <a href="{{ url_for('nueva_cita') }}" class="btn btn-primary w-100 w-sm-auto">Nueva Cita</a>
+        <a href="{{ url_for('ver_citas') }}" class="btn btn-secondary w-100 w-sm-auto">Ver Citas</a>
+      </div>
+    </nav>
+    
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Contenido de la página -->
+    {% block content %}{% endblock %}
+    
+    <!-- Scripts -->
+    {% block scripts %}{% endblock %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

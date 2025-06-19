@@ -1,0 +1,114 @@
+/* Eliminar la sombra del backdrop del modal */
+.modal-backdrop {
+    display: none !important;  /* Esto eliminará el backdrop y la sombra completamente */
+}
+
+/* Colores de los doctores, aplicados a los círculos en la leyenda */
+.doctor-verde {
+    background-color: #00FF00 !important;  /* Verde */
+}
+
+.doctor-azul {
+    background-color: #0000FF !important;  /* Azul */
+}
+
+.doctor-naranja {
+    background-color: #FFA500 !important;  /* Naranja */
+}
+
+.doctor-morado {
+    background-color: #800080 !important;  /* Morado */
+}
+
+.doctor-magenta {
+    background-color: #F820F8 !important;  /* Magenta */
+}
+
+.doctor-default {
+    background-color: #808080 !important;  /* Gris por defecto */
+}
+
+
+/* Estilos para la leyenda de los doctores */
+.doctor-legend {
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}
+
+.doctor-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 5px;  /* Añadir un poco de espacio entre el nombre y el icono */
+    border-radius: 50%;
+}
+
+/* Ajustes para la tabla */
+table th {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+table td {
+    text-align: center;
+}
+
+/* Negrita para la columna de horas */
+table tbody td:first-child {
+    font-weight: bold;
+}
+
+/* Botones celestes personalizados */
+.btn-celeste {
+    background-color: #5bc0de;
+    border-color: #46b8da;
+    color: white;
+}
+
+.btn-celeste:hover,
+.btn-celeste:focus {
+    background-color: #31b0d5;
+    border-color: #269abc;
+    color: white;
+}
+
+/* Hacer el texto y el icono más pequeños en pantallas pequeñas */
+@media (max-width: 600px) {
+    .doctor-legend {
+        font-size: 12px;
+    }
+}
+
+/* Contorno celeste claro más grueso */
+table td {
+  text-align: center;
+  border: 6px solid #81d4fa; /* celeste claro */
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Efecto sutil al pasar el mouse */
+table td:hover {
+  box-shadow: 0 0 8px #81d4fa;  /* sombra más notoria pero suave */
+  background-color: #e0f7fa;    /* fondo suave al pasar el mouse */
+  cursor: pointer;
+}
+
+/* Efecto sutil cuando se hace clic */
+table td:active {
+  background-color: #b2ebf2;    /* fondo más fuerte al hacer clic */
+  box-shadow: inset 0 0 5px #4fc3f7;
+}
+
+/* Opcional: celdas vacías con borde más delgado */
+table td:empty {
+  border: 2px solid #81d4fa;
+}

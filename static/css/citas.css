@@ -1,0 +1,105 @@
+/* Estilo global */
+body {
+    font-size: 1.6rem;
+  }
+  
+  h2 {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-label {
+    font-size: 1.6rem;
+  }
+  
+  .form-control,
+  .form-select {
+    font-size: 1.6rem;
+    padding: 1rem;
+    height: 3.5rem;
+    border-radius: 0.5rem;
+  }
+  
+  .btn {
+    font-size: 1.6rem;
+    height: 4rem;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  /* Contenedor centrado, ancho fijo para que no ocupe todo el ancho */
+  .container-responsive {
+    max-width: 360px;  /* Ancho aproximado de pantalla móvil menos márgenes */
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  
+  /* Ajustar la tabla para pantallas pequeñas */
+  table {
+    width: 100%;
+    table-layout: auto;
+  }
+  
+  /* Mejorar la responsividad de las tablas */
+  th, td {
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 1.4rem;
+  }
+  
+  th {
+    font-weight: bold;
+  }
+  
+  /* Estilo para los elementos de la lista en el modal */
+  .d-none {
+    display: none !important;
+  }
+  
+  .d-block {
+    display: block !important;
+  }
+  
+  /* Asegurarse de que los campos del formulario se adapten al ancho de la pantalla */
+  .form-control, .form-select {
+    width: 100%; /* Asegura que los campos se adapten al ancho */
+  }
+  
+  /* Para pantallas pequeñas */
+  @media (max-width: 768px) {
+    body {
+      font-size: 1.4rem; /* Reducir el tamaño del texto en pantallas pequeñas */
+    }
+  
+    .container-responsive {
+      padding: 0.5rem; /* Reducir el padding en pantallas pequeñas */
+    }
+  
+    .form-label {
+      font-size: 1.4rem;
+    }
+  
+    .form-control,
+    .form-select {
+      font-size: 1.4rem;
+      padding: 0.8rem;
+    }
+  
+    .btn {
+      font-size: 1.4rem;
+      padding: 0.8rem;
+    }
+  
+    /* Para hacer que las tablas se deslicen en pantallas pequeñas */
+    table {
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+  
+    th, td {
+      font-size: 1.2rem;
+      padding: 0.8rem;
+    }
+  }
+  

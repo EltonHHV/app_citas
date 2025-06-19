@@ -1,0 +1,236 @@
+{% extends "layout.html" %}
+
+{% block head_extra %}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Enlace al archivo CSS externo -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/citas.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-responsive">
+  <h2>Agendar Nueva Cita</h2>
+  <form method="post" autocomplete="off">
+    <!-- Paciente -->
+    <div class="mb-4">
+      <label for="paciente_input" class="form-label">Paciente</label>
+      <input
+        id="paciente_input"
+        list="pacientes"
+        name="paciente"
+        class="form-control"
+        value="{{ valores.get('paciente','') }}"
+        required>
+      <datalist id="pacientes">
+        {% for p in pacientes %}
+          <option value="{{ p['nombre'] }}"></option>
+        {% endfor %}
+      </datalist>
+    </div>
+
+    <!-- Motivo -->
+    <div class="mb-4">
+      <label for="motivo_select" class="form-label">Motivo</label>
+      <select id="motivo_select" name="motivo" class="form-select" required>
+        <option value=""></option>
+        {% for m in motivos %}
+          <option {% if valores.get('motivo') == m['descripcion'] %}selected{% endif %}>
+            {{ m['descripcion'] }}
+          </option>
+        {% endfor %}
+        <!-- Opción para 'Otro' -->
+        <option value="Otro" {% if valores.get('motivo') == 'Otro' %}selected{% endif %}>Otro</option>
+      </select>
+      <!-- Campo para ingresar otro motivo, solo visible si se selecciona 'Otro' -->
+      <div id="motivo_otro_container" class="{% if valores.get('motivo') == 'Otro' %}d-block{% else %}d-none{% endif %}">
+        <input
+          id="motivo_otro"
+          type="text"
+          name="motivo_otro"
+          class="form-control mt-2"
+          placeholder="Especifique el motivo"
+          value="{{ valores.get('motivo_otro','') }}">
+      </div>
+    </div>
+
+    <!-- Celular -->
+    <div class="mb-4">
+      <label for="celular_input" class="form-label">Celular</label>
+      <input
+        id="celular_input"
+        type="text"
+        name="celular"
+        class="form-control"
+        value="{{ valores.get('celular','') }}"
+        required>
+    </div>
+
+    <!-- Doctor -->
+    <div class="mb-4">
+      <label for="doctor_select" class="form-label">Doctor</label>
+      <select id="doctor_select" name="doctor" class="form-select" required>
+        <option value=""></option>
+        {% for d in doctores %}
+          <option value="{{ d['doctores'] }}" {% if d['doctores'] == doctor_default %}selected{% endif %}>
+            {{ d['doctores'] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Fecha -->
+    <div class="mb-4">
+      <label for="fecha_input" class="form-label">Fecha</label>
+      <input
+        id="fecha_input"
+        type="date"
+        name="fecha"
+        class="form-control"
+        min="{{ hoy }}"
+        value="{{ valores.get('fecha','') }}"
+        required>
+    </div>
+
+    <!-- Hora -->
+    <div class="mb-4">
+      <label for="hora_select" class="form-label">Hora</label>
+      <select id="hora_select" name="hora" class="form-select" required>
+        <!-- JavaScript rellenará -->
+      </select>
+    </div>
+
+    <button class="btn btn-success w-100">Guardar Cita</button>
+  </form>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+
+
+
+  const pacienteInput     = document.getElementById("paciente_input");
+  const datalistPacientes = document.getElementById("pacientes");
+  const celularInput      = document.getElementById("celular_input");
+  const doctorSelect      = document.getElementById("doctor_select");
+  const fechaInput        = document.getElementById("fecha_input");
+  const horaSelect        = document.getElementById("hora_select");
+
+  const horarios = [
+    '08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM',
+    '10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM',
+    '01:00 PM','01:30 PM','02:00 PM','02:30 PM','03:00 PM',
+    '03:30 PM','04:00 PM','04:30 PM','05:00 PM','05:30 PM',
+    '06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM'
+  ];
+
+  const motivoSelect = document.getElementById("motivo_select");
+  const motivoOtroContainer = document.getElementById("motivo_otro_container");
+
+  // Mostrar u ocultar el campo 'Otro' según la selección del motivo
+  motivoSelect.addEventListener("change", function() {
+    if (motivoSelect.value === "Otro") {
+      motivoOtroContainer.classList.remove("d-none"); // Mostrar el campo de texto
+      motivoOtroContainer.classList.add("d-block"); // Mostrar el campo de texto
+    } else {
+      motivoOtroContainer.classList.remove("d-block"); // Ocultar el campo de texto
+      motivoOtroContainer.classList.add("d-none"); // Ocultar el campo de texto
+    }
+  });
+
+  const formulario = document.querySelector("form");
+
+  // Función para validar el campo celular
+  function validarCelular() {
+    const celular = celularInput.value.trim();
+
+    // Expresión regular para verificar 9 dígitos
+    const regex = /^\d{9}$/;
+
+    if (!regex.test(celular)) {
+      // Si el celular no tiene 9 dígitos o tiene caracteres no numéricos
+      alert("Por favor, ingrese un número de celular válido (9 dígitos) en el campo de celular.");
+      celularInput.focus(); // Focaliza el campo para que el usuario lo corrija
+      return false; // Evita el envío del formulario
+    }
+
+    return true; // Si la validación es exitosa
+  }
+
+  // Evento para manejar el envío del formulario
+  formulario.addEventListener("submit", function(event) {
+    // Evita la validación predeterminada del navegador
+    event.preventDefault();
+
+    // Si la validación personalizada pasa, enviamos el formulario
+    if (validarCelular()) {
+      formulario.submit(); // Si todo está bien, enviamos el formulario
+    }
+  });
+
+
+  // Inicialización del formulario para la opción "Otro"
+  document.addEventListener("DOMContentLoaded", function() {
+    if (motivoSelect.value === "Otro") {
+      motivoOtroContainer.classList.remove("d-none");
+      motivoOtroContainer.classList.add("d-block");
+    }
+  });
+
+  // Autocompletar paciente + limpiar celular
+  pacienteInput.addEventListener("input", async () => {
+    celularInput.value = "";
+    const q = pacienteInput.value.trim();
+    datalistPacientes.innerHTML = "";
+    if (!q) return;
+    const res = await fetch(`/autocomplete_paciente?q=${encodeURIComponent(q)}`);
+    const nombres = await res.json();
+    nombres.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      datalistPacientes.appendChild(opt);
+    });
+  });
+
+  // Cargar teléfono
+  async function cargarTelefono() {
+    const nombre = pacienteInput.value.trim();
+    if (!nombre) return;
+    const res = await fetch(`/telefono_paciente?nombre=${encodeURIComponent(nombre)}`);
+    const { telefono } = await res.json();
+    celularInput.value = telefono || "";
+  }
+  pacienteInput.addEventListener("change", cargarTelefono);
+  pacienteInput.addEventListener("blur", cargarTelefono);
+
+  // Actualizar horas disponibles
+  async function actualizarHoras() {
+    const fecha  = fechaInput.value;
+    const doctor = doctorSelect.value;
+    horaSelect.innerHTML = "";
+    let ocupadas = [];
+    if (fecha && doctor) {
+      const res = await fetch(
+        `/horas_ocupadas?fecha=${encodeURIComponent(fecha)}` +
+        `&doctor=${encodeURIComponent(doctor)}`
+      );
+      ocupadas = await res.json();
+    }
+    horarios.forEach(h => {
+      const opt = document.createElement("option");
+      opt.value = h;
+      opt.textContent = h + (ocupadas.includes(h) ? " (ocupado)" : "");
+      if (ocupadas.includes(h)) {
+        opt.style.color = "#dc3545";
+        opt.disabled = true;
+      }
+      horaSelect.appendChild(opt);
+    });
+  }
+
+  doctorSelect.addEventListener("change", actualizarHoras);
+  fechaInput.addEventListener("change", actualizarHoras);
+  document.addEventListener("DOMContentLoaded", actualizarHoras);
+  
+</script>
+{% endblock %}
