@@ -83,7 +83,10 @@ def nueva_cita():
 
     #SUBABASE:
     conn = get_db_connection()  # Obtener la conexión de Supabase
-    pacientes = conn.table('historia_clinica').select('nombre').distinct().execute().data
+    pacientes_unicos = conn.table('historia_clinica').select('nombre').execute().data
+    pacientes = {p['nombre'] for p in pacientes_unicos}  # Utilizamos un set para eliminar duplicados
+    pacientes = list(pacientes)  # Convertimos el set nuevamente a lista
+
     doctores = conn.table('doctores').select('id, doctores').execute().data
     motivos = conn.table('motivoconsulta').select('id, descripcion').execute().data
 
