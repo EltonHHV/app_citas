@@ -313,10 +313,10 @@ def ver_citas():
     # ...código que ya tienes...
     conn = get_db_connection()
     # Ya tienes citas y colores, ahora agrega:
-    pacientes = conn.execute("SELECT DISTINCT nombre FROM historia_clinica ORDER BY nombre").fetchall()
-    doctores = conn.execute("SELECT id, doctores FROM doctores").fetchall()
-    motivos = conn.execute("SELECT id, descripcion FROM motivoconsulta").fetchall()
-    conn.close()
+    pacientes = conn.table('historia_clinica').select('nombre').execute().data
+    doctores = conn.table('doctores').select('id, doctores').execute().data
+    motivos = conn.table('motivoconsulta').select('id, descripcion').execute().data
+    # conn.close()
     hoy = date.today().isoformat()
 
 
