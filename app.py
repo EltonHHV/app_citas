@@ -233,12 +233,26 @@ def ver_citas():
 
     # Obtener citas de la semana con datos de doctor
     #SUBABASE:
-    filas = conn.table('citas').select('citas.id', 'citas.Fecha', 'citas.Hora', 'citas.Motivo', 'citas.Celular', 'citas.Doctor', 'citas.Paciente', 'doctores.color') \
-        .join('doctores', 'citas.Doctor', 'doctores.doctores') \
+    # Obtener las citas
+    filas = conn.table('citas').select('id', 'Fecha', 'Hora', 'Motivo', 'Celular', 'Doctor', 'Paciente') \
         .gte('Fecha', start_of_week).lte('Fecha', end_of_week).execute().data
 
-    total_doctores = len(conn.table('doctores').select('*').execute().data)
-    doctores_leyenda = {d['doctores']: d['color'] for d in conn.table('doctores').select('doctores, color').execute().data}
+    # Obtener los doctores y sus colores
+    doctores_data = conn.table('doctores').select('doctores', 'color').execute().data
+
+    # Crear un diccionario de doctores con sus colores
+    doctores_dict = {doctor['doctores']: doctor['color'] for doctor in doctores_data}
+
+    # Combinar las citas con los colores de los doctores
+    for cita in filas:
+        doctor_color = doctores_dict.get(cita['Doctor'], 'default_color')  # Si no se encuentra el doctor, asignar un color predeterminado
+        cita['color'] = doctor_color  # Añadir el color del doctor a la cita
+
+    # Obtener el total de doctores
+    total_doctores = len(doctores_data)
+
+    # Crear un diccionario con doctores y colores para la leyenda
+    doctores_leyenda = {doctor['doctores']: doctor['color'] for doctor in doctores_data}
 
     #LOCALEMNTE
     # filas = conn.execute(
