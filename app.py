@@ -4,6 +4,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 import calendar
+import pytz
 
 from datetime import date
 from flask import jsonify
@@ -391,7 +392,6 @@ def logout():
 
 from datetime import datetime, timedelta, date
 import calendar
-
 @app.route("/ver_citas_mensual", methods=["GET", "POST"])
 @check_subscription
 def ver_citas_mensual():
@@ -432,13 +432,15 @@ def ver_citas_mensual():
 
     session['start_of_month'] = start_of_month
 
-
     # Obtener citas para este mes
     last_day_of_month = calendar.monthrange(start_of_month.year, start_of_month.month)[1]
     end_of_month = start_of_month.replace(day=last_day_of_month)
 
     filas = conn.table('citas').select('id', 'Fecha', 'Hora', 'Motivo', 'Celular', 'Doctor', 'Paciente') \
         .gte('Fecha', start_of_month).lte('Fecha', end_of_month).eq('Doctor', doctor_name).execute().data
+
+    # Configura la zona horaria de Chimbote (Perú)
+    tz_peru = pytz.timezone('America/Lima')
 
     ocupadas = {}
     for c in filas:
@@ -495,15 +497,16 @@ def ver_citas_mensual():
         weeks.append(week)
         first_day_of_week = 0  # Después de la primera semana, no dejamos celdas vacías.
 
+    # Convertir la fecha de hoy a la hora de Perú (Chimbote)
+    hoy = datetime.now(tz_peru).date()
+
     return render_template(
         "ver_citas_mensual.html",
         start_of_month=start_of_month,
         weeks=weeks,
         ocupadas=ocupadas,
-        today=hoy  # Pasa la fecha actual al template
+        today=hoy  # Pasa la fecha actual al template con la hora de Perú
     )
-
-
 
 
 
