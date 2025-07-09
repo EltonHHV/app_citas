@@ -480,7 +480,7 @@ def ver_citas_mensual():
 
     # Determina el primer día de la semana (en qué día cae el primer día del mes)
     first_day_of_week = start_of_month.weekday()  # 0=Monday, 6=Sunday
-    first_day_of_week = (first_day_of_week + 1) % 7  # +1 para ajustar el cálculo y hacer que el martes sea 0, etc.
+    first_day_of_week = (first_day_of_week) % 7  # +1 para ajustar el cálculo y hacer que el martes sea 0, etc.
 
     # Empieza el calendario con días vacíos antes del primer día del mes
     while current_day.month == start_of_month.month:
