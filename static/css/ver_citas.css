@@ -112,3 +112,169 @@ table td:active {
 table td:empty {
   border: 2px solid #81d4fa;
 }
+
+
+.calendar {
+  margin-top: 20px;
+}
+
+.cita {
+  font-size: 12px;
+  color: #333;
+}
+
+.no-cita {
+  font-size: 12px;
+  color: #bbb;
+}
+
+table th, table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+
+
+
+
+/* Estilo para resaltar el número del día con un fondo celeste en un círculo */
+.highlighted-day {
+  background-color: #1f1ceb; /* Color celeste */
+  border-radius: 50%; /* Hace que el fondo sea circular */
+  display: inline-block;
+  padding: 5px 10px; /* Espaciado dentro del círculo */
+  color: white; /* Color del texto */
+  font-weight: bold; /* Hace que el número sea más visible */
+  text-align: center;
+  margin-top: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Mejora el diseño general */
+.calendar {
+    background-color: #f4f7fc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Estilo para las celdas del calendario */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    vertical-align: top;
+}
+
+/* Mejora la apariencia del número del día */
+td .highlighted-day {
+    background-color: #4fc3f7;
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+}
+
+/* Mejoras en las citas */
+.cita {
+    background-color: #e1f5fe;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cita strong {
+    font-size: 14px;
+    color: #0277bd;
+}
+
+.cita p {
+    font-size: 12px;
+    color: #555;
+}
+
+/* Hover efectos para celdas con citas */
+td:hover .cita {
+    background-color: #b3e5fc;
+}
+
+/* Diseño de las filas de la tabla */
+thead th {
+    background-color: #0277bd;
+    color: white;
+}
+
+/* Mejoras en las celdas vacías */
+td {
+    color: #b0bec5;
+}
+
+/* Mejoras en la sección de no hay citas */
+.no-cita {
+    color: #ff7043;
+    font-style: italic;
+}
+
+/* Añadir transiciones suaves */
+table, .cita {
+    transition: all 0.3s ease;
+}
+
+/* Para dispositivos pequeños */
+@media (max-width: 768px) {
+    .calendar {
+        padding: 15px;
+    }
+
+    th, td {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .cita {
+        font-size: 12px;
+    }
+}
+
+
+
+
+
+
+
+
+
+/* Estilo para el botón de WhatsApp */
+#whatsappBtn {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Asegura que la imagen de WhatsApp se vea bien */
+#whatsappBtn img {
+  width: 50px;
+  height: 50px;
+}
