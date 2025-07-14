@@ -92,6 +92,10 @@
               <button type="button" class="btn" id="whatsappBtn" onclick="openWhatsApp()">
                 <img src="{{ url_for('static', filename='wsp.png') }}" alt="WhatsApp" style="width: 50px; height: 50px;">
               </button>
+              <!-- Botón personalizado -->
+              <button type="button" class="btn" id="whatsappBtnPersonalizado" onclick="openWhatsAppPersonalizado()">
+                <img src="{{ url_for('static', filename='recordatorio.png') }}" alt="WhatsApp" style="width: 50px; height: 50px;">
+              </button>
             </div>
             <div class="mb-3">
               <label for="modalDoctor" class="form-label">Doctor</label>
@@ -133,18 +137,92 @@
 
   <!-- Script para abrir WhatsApp -->
   <script>
-    function openWhatsApp() {
-      var celular = document.getElementById("modalCelular").value;
-      if (celular) {
-        celular = celular.replace(/\s+/g, '');
-        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        var whatsappUrl = isMobile ? "whatsapp://send?phone=" + celular : "https://web.whatsapp.com/send?phone=" + celular;
-        window.open(whatsappUrl, "_blank");
-      } else {
-        alert("Por favor, ingrese un número de celular.");
-      }
+  function openWhatsApp() {
+    var celular = document.getElementById("modalCelular").value;
+    if (celular) {
+      celular = celular.replace(/\s+/g, '');
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      var whatsappUrl = isMobile ? "whatsapp://send?phone=" + celular : "https://web.whatsapp.com/send?phone=" + celular;
+      window.open(whatsappUrl, "_blank");
+    } else {
+      alert("Por favor, ingrese un número de celular.");
     }
+  }
+
+  function openWhatsAppPersonalizado() {
+  var celular = document.getElementById("modalCelular").value;
+  var nombreClinica = "{{ consultorio }}";
+  var fechaCita = document.getElementById("modalFecha").value; // yyyy-mm-dd
+  var horaCita = document.getElementById("modalHora").value;
+
+  if (celular && fechaCita && horaCita) {
+    celular = celular.replace(/\s+/g, '');
+
+    // Extraer año, mes, día (sin desfase de zona horaria)
+    var partes = fechaCita.split("-");
+    var anio = parseInt(partes[0], 10);
+    var mes = parseInt(partes[1], 10) - 1; // Mes en JS es 0-based
+    var dia = parseInt(partes[2], 10);
+
+    var fechaCitaObj = new Date(anio, mes, dia);
+
+    // Obtener hoy (local, sin horas)
+    var hoy = new Date();
+    var hoyObj = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+
+    var diffDias = Math.floor((fechaCitaObj - hoyObj) / (1000 * 60 * 60 * 24));
+
+    // Si la cita es para una fecha pasada
+    if (diffDias < 0) {
+      alert("Lo sentimos, no se puede enviar un recordatorio para citas de fechas pasadas. Por favor, revise la fecha.");
+      return; // Salir de la función si la fecha es pasada
+    }
+
+    // Día de la semana y mes en español
+    var diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+    var meses = [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio",
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ];
+    var diaSemana = diasSemana[fechaCitaObj.getDay()];
+    var diaNum = fechaCitaObj.getDate();
+    var mesNombre = meses[fechaCitaObj.getMonth()];
+
+    // Frase de fecha bonita
+    let fraseFecha = "";
+    if (diffDias === 0) {
+      fraseFecha = "HOY 🗓️";
+    } else if (diffDias === 1) {
+      fraseFecha = "MAÑANA 🗓️";
+    } else if (diffDias > 1) {
+      fraseFecha = "el día " + diaSemana + " " + diaNum + " de " + mesNombre;
+    } else {
+      fraseFecha = "la fecha seleccionada";
+    }
+
+    // Mensaje bonito con emojis
+    var mensaje = "¡Hola! 👋😀\n";
+    mensaje += "Le escribimos " + nombreClinica + " para recordarle su cita programada ";
+    mensaje += "para " + fraseFecha + " a las " + horaCita + ". 🕒\n";
+    mensaje += "Agradecemos tu puntualidad y confianza 😊. ¡Nos vemos pronto! 🩵";
+
+    var urlMensaje = encodeURIComponent(mensaje);
+
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    var whatsappUrl = isMobile
+      ? "whatsapp://send?phone=" + celular + "&text=" + urlMensaje
+      : "https://web.whatsapp.com/send?phone=" + celular + "&text=" + urlMensaje;
+
+    window.open(whatsappUrl, "_blank");
+  } else {
+    alert("Por favor, complete todos los campos de la cita.");
+  }
+}
+
+
+
   </script>
+
 
   <!-- Script para cargar horas disponibles -->
   <script>
@@ -214,6 +292,13 @@
       const doctor = document.getElementById('modalDoctor').value;
       loadHorasModal(fechaSeleccionada, doctor, horaOriginalCita);
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Establecer la fecha mínima como el día de hoy
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('modalFecha').setAttribute('min', today);
+    });
+
 
     // Función para mostrar el modal de confirmación
     function showConfirmationMessage(message) {

@@ -278,3 +278,17 @@ table, .cita {
   width: 50px;
   height: 50px;
 }
+
+
+#whatsappBtnPersonalizado {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Asegura que la imagen de WhatsApp se vea bien */
+#whatsappBtnPersonalizado img {
+  width: 50px;
+  height: 50px;
+}

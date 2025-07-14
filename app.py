@@ -26,6 +26,15 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Método para interactuar con la base de datos
 
+
+CONSULTORIOS = {
+    1: "de la Clínica Odontológica Godental",
+    2: "de la Clínica Dental Virodent",
+    3: "de la Clínica Dental Aldana",
+    # Agrega todos tus consultorios
+}
+
+
 # Método para interactuar con la base de datos
 def get_db_connection():
     return supabase  # Retorna el cliente de Supabase para usarlo en las consultas
@@ -285,6 +294,7 @@ def nueva_cita():
     )
 
 
+
 @app.route("/horas_ocupadas")
 def horas_ocupadas():
     doctor_id = session.get("doctor_id")
@@ -402,8 +412,11 @@ def ver_citas_mensual():
 
     # Obtener el nombre del doctor
     conn = get_db_connection()
-    doctor = conn.table('doctores').select('doctores').eq('id', doctor_id).execute().data
+    doctor = conn.table('doctores').select('doctores', 'consultorio_id').eq('id', doctor_id).execute().data
     doctor_name = doctor[0]['doctores'] if doctor else ''
+    consultorio_id = doctor[0]['consultorio_id'] if doctor else None
+    consultorio_nombre = CONSULTORIOS.get(consultorio_id, "Nuestra clínica")
+
 
     hoy = date.today()
 
@@ -505,7 +518,8 @@ def ver_citas_mensual():
         start_of_month=start_of_month,
         weeks=weeks,
         ocupadas=ocupadas,
-        today=hoy  # Pasa la fecha actual al template con la hora de Perú
+        today=hoy,  # Pasa la fecha actual al template con la hora de Perú)
+        consultorio=consultorio_nombre
     )
 
 
