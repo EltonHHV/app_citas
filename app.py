@@ -331,10 +331,13 @@ def autocomplete_paciente():
 @app.route("/telefono_paciente")
 def telefono_paciente():
     nombre = request.args.get("nombre", "").strip()
-    if not nombre:
+    doctor_id = session.get("doctor_id")  # Obtener el doctor_id de la sesión
+    if not nombre or not doctor_id:
         return jsonify({"telefono": ""})
+
     conn = get_db_connection()
-    filas = conn.table('historia_clinica').select('telefono').ilike('nombre', nombre).execute().data
+    # Filtrar teléfono solo para pacientes del doctor autenticado
+    filas = conn.table('historia_clinica').select('telefono').eq('doctor_id', doctor_id).ilike('nombre', nombre).execute().data
     if filas:
         fila = filas[0]
         return jsonify({"telefono": fila["telefono"] if fila.get("telefono") else ""})
