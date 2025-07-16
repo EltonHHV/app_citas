@@ -21,6 +21,7 @@ app.secret_key = 'xddx'  # Cambia esto por una clave secreta real
 # SUPABASE_URL = "***********"
 # SUPABASE_KEY = "***********"
 
+
 # Crear cliente de Supabase
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -31,7 +32,8 @@ CONSULTORIOS = {
     1: "de la Clínica Odontológica Godental",
     2: "de la Clínica Dental Virodent",
     3: "de la Clínica Dental Aldana",
-    # Agrega todos tus consultorios
+    4: "del Centro Dental Enríquez",
+    5: "del Consultorio Odontológico Ruguzdent",
 }
 
 
