@@ -135,50 +135,56 @@
     </div>
   </div>
 
-  <!-- Script para abrir WhatsApp -->
-  <script>
+<script>
+  function formatPeruNumber(num) {
+    num = num.replace(/[^\d]/g, '');
+    if (num.length === 9) num = "51" + num;
+    if (num.length !== 11 || !num.startsWith("51")) return false;
+    return num;
+  }
+
   function openWhatsApp() {
     var celular = document.getElementById("modalCelular").value;
-    if (celular) {
-      celular = celular.replace(/\s+/g, '');
-      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      var whatsappUrl = isMobile ? "whatsapp://send?phone=" + celular : "https://web.whatsapp.com/send?phone=" + celular;
-      window.open(whatsappUrl, "_blank");
-    } else {
-      alert("Por favor, ingrese un número de celular.");
+    var numero = formatPeruNumber(celular);
+    if (!numero) {
+      alert("Ingrese un número válido de Perú (9 dígitos, ejemplo: 912345678)");
+      return;
     }
+    var whatsappUrl = "https://wa.me/" + numero;
+    window.open(whatsappUrl, "_blank");
   }
 
   function openWhatsAppPersonalizado() {
-  var celular = document.getElementById("modalCelular").value;
-  var nombreClinica = "{{ consultorio }}";
-  var fechaCita = document.getElementById("modalFecha").value; // yyyy-mm-dd
-  var horaCita = document.getElementById("modalHora").value;
+    var celular = document.getElementById("modalCelular").value;
+    var numero = formatPeruNumber(celular);
+    var nombreClinica = "{{ consultorio }}";
+    var fechaCita = document.getElementById("modalFecha").value;
+    var horaCita = document.getElementById("modalHora").value;
 
-  if (celular && fechaCita && horaCita) {
-    celular = celular.replace(/\s+/g, '');
-
-    // Extraer año, mes, día (sin desfase de zona horaria)
-    var partes = fechaCita.split("-");
-    var anio = parseInt(partes[0], 10);
-    var mes = parseInt(partes[1], 10) - 1; // Mes en JS es 0-based
-    var dia = parseInt(partes[2], 10);
-
-    var fechaCitaObj = new Date(anio, mes, dia);
-
-    // Obtener hoy (local, sin horas)
-    var hoy = new Date();
-    var hoyObj = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-
-    var diffDias = Math.floor((fechaCitaObj - hoyObj) / (1000 * 60 * 60 * 24));
-
-    // Si la cita es para una fecha pasada
-    if (diffDias < 0) {
-      alert("Lo sentimos, no se puede enviar un recordatorio para citas de fechas pasadas. Por favor, revise la fecha.");
-      return; // Salir de la función si la fecha es pasada
+    if (!numero) {
+      alert("Ingrese un número válido de Perú (9 dígitos, ejemplo: 912345678)");
+      return;
+    }
+    if (!(fechaCita && horaCita)) {
+      alert("Por favor, complete todos los campos de la cita.");
+      return;
     }
 
-    // Día de la semana y mes en español
+    var partes = fechaCita.split("-");
+    var anio = parseInt(partes[0], 10);
+    var mes = parseInt(partes[1], 10) - 1;
+    var dia = parseInt(partes[2], 10);
+    var fechaCitaObj = new Date(anio, mes, dia);
+
+    var hoy = new Date();
+    var hoyObj = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    var diffDias = Math.floor((fechaCitaObj - hoyObj) / (1000 * 60 * 60 * 24));
+
+    if (diffDias < 0) {
+      alert("No se puede enviar recordatorio para fechas pasadas.");
+      return;
+    }
+
     var diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
     var meses = [
       "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -188,40 +194,23 @@
     var diaNum = fechaCitaObj.getDate();
     var mesNombre = meses[fechaCitaObj.getMonth()];
 
-    // Frase de fecha bonita
     let fraseFecha = "";
-    if (diffDias === 0) {
-      fraseFecha = "HOY 🗓️";
-    } else if (diffDias === 1) {
-      fraseFecha = "MAÑANA 🗓️";
-    } else if (diffDias > 1) {
-      fraseFecha = "el día " + diaSemana + " " + diaNum + " de " + mesNombre;
-    } else {
-      fraseFecha = "la fecha seleccionada";
-    }
+    if (diffDias === 0) fraseFecha = "HOY 🗓️";
+    else if (diffDias === 1) fraseFecha = "MAÑANA 🗓️";
+    else if (diffDias > 1) fraseFecha = "el día " + diaSemana + " " + diaNum + " de " + mesNombre;
+    else fraseFecha = "la fecha seleccionada";
 
-    // Mensaje bonito con emojis
     var mensaje = "¡Hola! 👋😀\n";
     mensaje += "Le escribimos " + nombreClinica + " para recordarle su cita programada ";
     mensaje += "para " + fraseFecha + " a las " + horaCita + ". 🕒\n";
     mensaje += "Agradecemos tu puntualidad y confianza 😊. ¡Nos vemos pronto! 🩵";
-
     var urlMensaje = encodeURIComponent(mensaje);
 
-    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    var whatsappUrl = isMobile
-      ? "whatsapp://send?phone=" + celular + "&text=" + urlMensaje
-      : "https://web.whatsapp.com/send?phone=" + celular + "&text=" + urlMensaje;
-
+    var whatsappUrl = "https://wa.me/" + numero + "?text=" + urlMensaje;
     window.open(whatsappUrl, "_blank");
-  } else {
-    alert("Por favor, complete todos los campos de la cita.");
   }
-}
+</script>
 
-
-
-  </script>
 
 
   <!-- Script para cargar horas disponibles -->
