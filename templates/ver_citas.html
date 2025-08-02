@@ -146,34 +146,28 @@
 
 <!-- Script para abrir WhatsApp -->
 <script>
+  function formatPeruNumber(num) {
+    num = num.replace(/[^\d]/g, '');
+    if (num.length === 9) num = "51" + num;
+    if (num.length !== 11 || !num.startsWith("51")) return false;
+    return num;
+  }
+
   function openWhatsApp() {
-    // Obtener el número de celular del input
     var celular = document.getElementById("modalCelular").value;
+    var numero = formatPeruNumber(celular);
 
-    // Comprobar si el número de celular está presente
-    if (celular) {
-      // Eliminar cualquier espacio extra
-      celular = celular.replace(/\s+/g, '');
-
-      // Verificar si estamos en un dispositivo móvil o escritorio
-      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      // Crear el enlace de WhatsApp
-      var whatsappUrl;
-
-      if (isMobile) {
-        // Para dispositivos móviles, abrir la app de WhatsApp
-        whatsappUrl = "whatsapp://send?phone=" + celular;
-      } else {
-        // Para PC o laptop, abrir WhatsApp Web
-        whatsappUrl = "https://web.whatsapp.com/send?phone=" + celular;
-      }
-
-      // Abrir el enlace de WhatsApp
-      window.open(whatsappUrl, "_blank");
-    } else {
-      alert("Por favor, ingrese un número de celular.");
+    if (!numero) {
+      alert("Ingrese un número válido de Perú (9 dígitos, ejemplo: 912345678)");
+      return;
     }
+
+    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    var whatsappUrl = isMobile
+      ? "https://wa.me/" + numero
+      : "https://web.whatsapp.com/send?phone=" + numero;
+
+    window.open(whatsappUrl, "_blank");
   }
 </script>
 
