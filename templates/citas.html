@@ -98,7 +98,8 @@
       </select>
     </div>
 
-    <button class="btn btn-success w-100">Guardar Cita</button>
+    <button id="btnSubmitCita" class="btn btn-success w-100" type="submit">Guardar Cita</button>
+
   </form>
 </div>
 {% endblock %}
@@ -141,30 +142,29 @@
   // Función para validar el campo celular
   function validarCelular() {
     const celular = celularInput.value.trim();
-
-    // Expresión regular para verificar 9 dígitos
     const regex = /^\d{9}$/;
-
     if (!regex.test(celular)) {
-      // Si el celular no tiene 9 dígitos o tiene caracteres no numéricos
       alert("Por favor, ingrese un número de celular válido (9 dígitos) en el campo de celular.");
-      celularInput.focus(); // Focaliza el campo para que el usuario lo corrija
-      return false; // Evita el envío del formulario
+      celularInput.focus();
+      return false;
     }
-
-    return true; // Si la validación es exitosa
+    return true;
   }
 
-  // Evento para manejar el envío del formulario
-  formulario.addEventListener("submit", function(event) {
-    // Evita la validación predeterminada del navegador
-    event.preventDefault();
-
-    // Si la validación personalizada pasa, enviamos el formulario
-    if (validarCelular()) {
-      formulario.submit(); // Si todo está bien, enviamos el formulario
+  let sending = false;
+  formulario.addEventListener("submit", function (event) {
+    if (sending) { event.preventDefault(); return; } // bloquea reenvío
+    if (!validarCelular()) {                        // si no pasa validación, no envía
+      event.preventDefault();
+      return;
     }
+    sending = true;
+    const btn = document.getElementById("btnSubmitCita");
+    if (btn) btn.disabled = true;                   // deshabilita botón
+    // Deja que el submit nativo ocurra (no llames formulario.submit())
   });
+
+
 
 
   // Inicialización del formulario para la opción "Otro"

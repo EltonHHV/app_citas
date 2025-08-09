@@ -244,7 +244,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-success w-100">Guardar Cita</button>
+          <button id="btnSubmitModalCita" class="btn btn-success w-100" type="submit">Guardar Cita</button>
         </div>
       </div>
     </form>
@@ -435,15 +435,22 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 // ----- Validar celular (9 dígitos) -----
 const modalForm = document.getElementById("formNuevaCita");
+let sendingModal = false;
 modalForm.addEventListener("submit", function(event) {
+  if (sendingModal) { event.preventDefault(); return; } // anti-doble click
   const celular = modalCelularInput.value.trim();
   if (!/^\d{9}$/.test(celular)) {
     event.preventDefault();
     alert("Por favor, ingrese un número de celular válido (9 dígitos).");
     modalCelularInput.focus();
-    return false;
+    return;
   }
+  sendingModal = true;
+  const btn = document.getElementById("btnSubmitModalCita");
+  if (btn) btn.disabled = true;
+  // Deja que el submit nativo ocurra
 });
+
 
 
 </script>
