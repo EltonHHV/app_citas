@@ -34,6 +34,7 @@ CONSULTORIOS = {
     3: "de la Clínica Dental Aldana",
     4: "del Centro Dental Enríquez",
     5: "del Consultorio Odontológico Ruguzdent",
+    7: "del Consultorio Dental Saludent",
 }
 
 
