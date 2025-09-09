@@ -36,6 +36,7 @@ CONSULTORIOS = {
     5: "del Consultorio Odontológico Ruguzdent",
     7: "del Consultorio Dental Saludent",
     8: "de la Clínica Dental Santa Apolonia 2",
+    9: "del Consultorio Obstétrico Happuch",
 }
 
 
