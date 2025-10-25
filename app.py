@@ -329,9 +329,18 @@ def autocomplete_paciente():
         return jsonify([])
 
     conn = get_db_connection()
-    # Filtrar pacientes solo para el doctor autenticado
-    filas = conn.table('historia_clinica').select('nombre').eq('doctor_id', doctor_id).ilike('nombre', f'{q}%').order('nombre').execute().data
+    filas = (
+        conn.table('historia_clinica')
+        .select('nombre')
+        .eq('doctor_id', doctor_id)
+        .ilike('nombre', f'%{q}%')  # 👈 Aquí el cambio clave
+        .order('nombre')
+        .execute()
+        .data
+    )
+
     return jsonify([f["nombre"] for f in filas])
+
 
 
 @app.route("/telefono_paciente")
@@ -352,16 +361,33 @@ def telefono_paciente():
 
 @app.route('/editar_cita', methods=['POST'])
 def editar_cita():
+    # Obtener campos obligatorios (reprogramación)
     id_cita     = request.form['id']
     nueva_fecha = request.form['fecha']
     nueva_hora  = request.form['hora']
+    
+    # Obtener campos editables (Motivo y Celular)
+    # Usamos .get() por seguridad, aunque los campos serán obligatorios
+    nuevo_motivo = request.form.get('motivo')
+    nuevo_celular = request.form.get('celular') 
+
     conn = get_db_connection()
-    conn.table('citas').update({
+    
+    # Preparamos el objeto de actualización con todos los campos
+    datos_a_actualizar = {
         'Fecha': nueva_fecha,
-        'Hora': nueva_hora
-    }).eq('id', id_cita).execute()
-    flash('Cita reprogramada correctamente', 'success')
+        'Hora': nueva_hora,
+        # Incluimos los nuevos campos editables
+        'Motivo': nuevo_motivo,
+        'Celular': nuevo_celular
+    }
+    
+    conn.table('citas').update(datos_a_actualizar).eq('id', id_cita).execute()
+    
+    flash('Cita actualizada correctamente', 'success')
     return redirect(url_for('ver_citas'))
+
+
 
 @app.route('/eliminar_cita', methods=['POST'])
 def eliminar_cita():
@@ -377,15 +403,30 @@ def eliminar_cita():
 
 @app.route('/editarxd', methods=['POST'])
 def editarxd():
+    # Obtener campos de reprogramación
     id_cita     = request.form['id']
     nueva_fecha = request.form['fecha']
     nueva_hora  = request.form['hora']
+    
+    # Obtener nuevos campos editables
+    nuevo_motivo = request.form.get('motivo')
+    nuevo_celular = request.form.get('celular')
+    
     conn = get_db_connection()
-    conn.table('citas').update({
+    
+    # Preparamos el objeto de actualización
+    datos_a_actualizar = {
         'Fecha': nueva_fecha,
-        'Hora': nueva_hora
-    }).eq('id', id_cita).execute()
-    return jsonify({"success": True, "message": "Cita reprogramada correctamente"})
+        'Hora': nueva_hora,
+        # Incluimos las columnas de tu BD: "Motivo" y "Celular"
+        'Motivo': nuevo_motivo,
+        'Celular': nuevo_celular
+    }
+    
+    conn.table('citas').update(datos_a_actualizar).eq('id', id_cita).execute()
+    
+    return jsonify({"success": True, "message": "Cita actualizada correctamente"})
+
 
 
 @app.route('/eliminarxd', methods=['POST'])

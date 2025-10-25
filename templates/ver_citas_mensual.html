@@ -83,11 +83,11 @@
             </div>
             <div class="mb-3">
               <label for="modalMotivo" class="form-label">Motivo</label>
-              <input type="text" id="modalMotivo" class="form-control" readonly>
+              <input type="text" id="modalMotivo" name="motivo" class="form-control">
             </div>
             <div class="mb-3 d-flex align-items-center">
               <label for="modalCelular" class="form-label me-2">Celular</label>
-              <input type="text" id="modalCelular" class="form-control me-2" readonly>
+              <input type="text" id="modalCelular" name="celular" class="form-control me-2">
               <!-- Botón de WhatsApp con la imagen -->
               <button type="button" class="btn" id="whatsappBtn" onclick="openWhatsApp()">
                 <img src="{{ url_for('static', filename='wsp.png') }}" alt="WhatsApp" style="width: 50px; height: 50px;">
@@ -330,25 +330,34 @@
     }
 
     function editarxd() {
-      const citaId = document.getElementById('modalCitaId').value;
-      const nuevaFecha = document.getElementById('modalFecha').value;
-      const nuevaHora = document.getElementById('modalHora').value;
-      const formData = new FormData();
-      formData.append('id', citaId);
-      formData.append('fecha', nuevaFecha);
-      formData.append('hora', nuevaHora);
+    const citaId = document.getElementById('modalCitaId').value;
+    const nuevaFecha = document.getElementById('modalFecha').value;
+    const nuevaHora = document.getElementById('modalHora').value;
+    
+    // 👇 Nuevos valores de Motivo y Celular
+    const nuevoMotivo = document.getElementById('modalMotivo').value;
+    const nuevoCelular = document.getElementById('modalCelular').value;
 
-      fetch('/editarxd', {
+    const formData = new FormData();
+    formData.append('id', citaId);
+    formData.append('fecha', nuevaFecha);
+    formData.append('hora', nuevaHora);
+    
+    // 👇 Agregamos los nuevos campos al FormData
+    formData.append('motivo', nuevoMotivo);
+    formData.append('celular', nuevoCelular);
+
+    fetch('/editarxd', {
         method: 'POST',
         body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-          showConfirmationMessage(data.message);
+            showConfirmationMessage(data.message);
         }
-      });
-    }
+    });
+  }
   </script>
 
 {% endblock %}
