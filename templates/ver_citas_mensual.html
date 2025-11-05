@@ -3,12 +3,44 @@
 {% block content %}
   <h2>Calendario del Mes {{ start_of_month.strftime('%B %Y') }}</h2>
   
+  {% if tiene_sedes %}
+    <div class="alert alert-info mb-3">
+      <i class="bi bi-info-circle"></i> Mostrando todas las citas
+    </div>
+  {% endif %}
+  
   <form method="POST" class="mb-3">
     <button type="submit" name="action" value="prev_month" class="btn btn-celeste">Mes Anterior</button>
     <button type="submit" name="action" value="next_month" class="btn btn-celeste">Mes Siguiente</button>
   </form>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
+
+  <style>
+    /* Estilos mejorados para las citas con colores por profesional */
+    .cita {
+      border-radius: 4px;
+      margin-top: 5px;
+      padding: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .cita:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      filter: brightness(0.95);
+    }
+    
+    .cita-profesional {
+      font-size: 0.75em;
+      color: #333;
+      font-weight: 500;
+      display: block;
+      margin-top: 2px;
+    }
+  </style>
 
   <div class="calendar">
     <table class="table table-bordered">
@@ -37,17 +69,24 @@
                   {% set citas = ocupadas.get(fecha, []) %}
 
                   {% for cita in citas %}
-                    <div class="cita" style="background-color: #f1f1f1; border-radius: 4px; margin-top: 5px; padding: 5px;"
+                    {% set color_fondo = colores_doctores.get(cita.doctor, '#f1f1f1') if tiene_sedes else '#f1f1f1' %}
+                    <div class="cita"
+                         style="background-color: {{ color_fondo }};"
                          data-id="{{ cita.id }}"
                          data-paciente="{{ cita.paciente }}"
                          data-motivo="{{ cita.motivo }}"
                          data-celular="{{ cita.celular }}"
                          data-doctor="{{ cita.doctor }}"
-                         data-fecha="{{ cita.fecha }}"
+                         data-fecha="{{ cita.fecha if cita.fecha is string else cita.fecha.strftime('%Y-%m-%d') }}"
                          data-hora="{{ cita.hora }}"
+                         data-nacionalidad="{{ cita.nacionalidad }}"
+                         data-consultorio-nombre="{{ cita.consultorio_nombre }}"
                          onclick="fillEditModal(this)">
                       <strong>{{ cita.paciente }}</strong><br>
                       {{ cita.hora }} - {{ cita.motivo }}
+                      {% if tiene_sedes %}
+                        <span class="cita-profesional">{{ cita.doctor }}</span>
+                      {% endif %}
                     </div>
                   {% endfor %}
 
@@ -55,7 +94,7 @@
                     <div class="no-cita" style="text-align: center; color: gray;">No hay citas</div>
                   {% endif %}
                 {% else %}
-                  <div></div> <!-- Celdas vacías si day.date es None -->
+                  <div></div>
                 {% endif %}
               </td>
             {% endfor %}
@@ -76,6 +115,9 @@
           </div>
           <div class="modal-body">
             <input type="hidden" name="id" id="modalCitaId">
+            <!-- ✅ NUEVO: Campo oculto para nacionalidad de la cita -->
+            <input type="hidden" id="modalNacionalidad">
+            <input type="hidden" id="modalConsultorioNombre">
 
             <div class="mb-3">
               <label for="modalPaciente" class="form-label">Paciente</label>
@@ -136,19 +178,75 @@
   </div>
 
 
- <script>
-  function formatPeruNumber(num) {
-    num = num.replace(/[^\d]/g, '');
-    if (num.length === 9) num = "51" + num;
-    if (num.length !== 11 || !num.startsWith("51")) return false;
-    return num;
+  <script>
+  // ============================================================
+  // CONFIGURACIÓN MULTINACIONAL DE WHATSAPP
+  // ============================================================
+  
+  const PAIS_CONFIG = {
+    'Peru': {
+      codigo: '51',
+      digitos: 9,
+      nombre: 'Perú',
+      placeholder: '912345678'
+    },
+    'Chile': {
+      codigo: '56',
+      digitos: 9,
+      nombre: 'Chile',
+      placeholder: '912345678'
+    }
+  };
+
+  /**
+   * ✅ NUEVO: Obtiene la configuración del país de la cita actual
+   */
+  function getConfig() {
+    const nacionalidad = document.getElementById("modalNacionalidad").value;
+    const config = PAIS_CONFIG[nacionalidad];
+    
+    if (!config) {
+      console.warn(`Nacionalidad "${nacionalidad}" no configurada. Usando Perú por defecto.`);
+      return PAIS_CONFIG['Peru'];
+    }
+    
+    return config;
   }
 
+  /**
+   * ✅ MODIFICADO: Formatea el número según el país de la cita
+   */
+  function formatPhoneNumber(num) {
+    const config = getConfig();  // ← Obtiene config dinámicamente
+    num = num.replace(/[^\d]/g, '');
+    
+    // Si el número ya tiene el código de país
+    if (num.startsWith(config.codigo)) {
+      const longitudEsperada = config.codigo.length + config.digitos;
+      if (num.length === longitudEsperada) {
+        return num;
+      }
+      return false;
+    }
+    
+    // Si solo tiene los dígitos locales
+    if (num.length === config.digitos) {
+      return config.codigo + num;
+    }
+    
+    return false;
+  }
+
+  /**
+   * ✅ MODIFICADO: Abre WhatsApp sin mensaje
+   */
   function openWhatsApp() {
+    const config = getConfig();
     var celular = document.getElementById("modalCelular").value;
-    var numero = formatPeruNumber(celular);
+    var numero = formatPhoneNumber(celular);
+    
     if (!numero) {
-      alert("Ingrese un número válido de Perú (9 dígitos, ejemplo: 912345678)");
+      alert(`Ingrese un número válido de ${config.nombre} (${config.digitos} dígitos, ejemplo: ${config.placeholder})`);
       return;
     }
 
@@ -157,20 +255,26 @@
       ? "https://wa.me/" + numero
       : "https://web.whatsapp.com/send?phone=" + numero;
 
+    console.log('Abriendo WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, "_blank");
   }
 
+  /**
+   * ✅ MODIFICADO: Abre WhatsApp con mensaje personalizado de recordatorio
+   */
   function openWhatsAppPersonalizado() {
+    const config = getConfig();
     var celular = document.getElementById("modalCelular").value;
-    var numero = formatPeruNumber(celular);
-    var nombreClinica = "{{ consultorio }}";
+    var numero = formatPhoneNumber(celular);
+    var nombreClinica = document.getElementById("modalConsultorioNombre").value;
     var fechaCita = document.getElementById("modalFecha").value;
     var horaCita = document.getElementById("modalHora").value;
 
     if (!numero) {
-      alert("Ingrese un número válido de Perú (9 dígitos, ejemplo: 912345678)");
+      alert(`Ingrese un número válido de ${config.nombre} (${config.digitos} dígitos, ejemplo: ${config.placeholder})`);
       return;
     }
+    
     if (!(fechaCita && horaCita)) {
       alert("Por favor, complete todos los campos de la cita.");
       return;
@@ -201,13 +305,18 @@
     var mesNombre = meses[fechaCitaObj.getMonth()];
 
     let fraseFecha = "";
-    if (diffDias === 0) fraseFecha = "HOY 🗓️";
-    else if (diffDias === 1) fraseFecha = "MAÑANA 🗓️";
-    else if (diffDias > 1) fraseFecha = "el día " + diaSemana + " " + diaNum + " de " + mesNombre;
-    else fraseFecha = "la fecha seleccionada";
+    if (diffDias === 0) {
+      fraseFecha = "HOY 🗓️";
+    } else if (diffDias === 1) {
+      fraseFecha = "MAÑANA 🗓️";
+    } else if (diffDias > 1) {
+      fraseFecha = "el día " + diaSemana + " " + diaNum + " de " + mesNombre;
+    } else {
+      fraseFecha = "la fecha seleccionada";
+    }
 
     var mensaje = "¡Hola! 👋😀\n";
-    mensaje += "Le escribimos " + nombreClinica + " para recordarle su cita programada ";
+    mensaje += "Le escribimos de " + nombreClinica + " para recordarle su cita programada ";
     mensaje += "para " + fraseFecha + " a las " + horaCita + ". 🕒\n";
     mensaje += "Agradecemos tu puntualidad y confianza 😊. ¡Nos vemos pronto! ❤️";
     var urlMensaje = encodeURIComponent(mensaje);
@@ -217,15 +326,15 @@
       ? "https://wa.me/" + numero + "?text=" + urlMensaje
       : "https://web.whatsapp.com/send?phone=" + numero + "&text=" + urlMensaje;
 
+    console.log('Enviando recordatorio a:', numero);
     window.open(whatsappUrl, "_blank");
   }
 </script>
 
 
-
-
   <!-- Script para cargar horas disponibles -->
   <script>
+    // Configuración de horarios disponibles
     const horarios = [
       '08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM',
       '10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM',
@@ -233,6 +342,11 @@
       '03:30 PM','04:00 PM','04:30 PM','05:00 PM','05:30 PM',
       '06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM'
     ];
+
+    // Variable global para saber si se manejan múltiples profesionales
+    var tieneSedes = {{ tiene_sedes | tojson }};
+  
+    console.log(tieneSedes);  
 
     let fechaOriginalCita = '';
     let horaOriginalCita = '';
@@ -249,13 +363,17 @@
         opt.value = h;
         opt.textContent = h;
 
-        // Si la hora está ocupada y no es la hora de la cita seleccionada, deshabilitarla
+        // Si la hora está ocupada
         if (ocupadas.includes(h) && h !== horaSel) {
           opt.style.color = '#dc3545'; // Color rojo para las horas ocupadas
-          opt.disabled = true;
+          
+          // Solo deshabilitar si NO tiene múltiples profesionales
+          if (!tieneSedes) {
+            opt.disabled = true;
+          }
         }
 
-        // Si es la misma hora que la cita actual, no la deshabilites
+        // Si es la misma hora que la cita actual, seleccionarla
         if (h === horaSel) {
           opt.selected = true;
         }
@@ -264,6 +382,10 @@
       });
     }
 
+    /**
+     * ✅ MODIFICADO: Función para cargar datos de la cita en el modal
+     * Ahora incluye nacionalidad y consultorio
+     */
     function fillEditModal(citaElement) {
       const id = citaElement.getAttribute('data-id');
       const paciente = citaElement.getAttribute('data-paciente');
@@ -272,6 +394,10 @@
       const doctor = citaElement.getAttribute('data-doctor');
       const fecha = citaElement.getAttribute('data-fecha');
       const hora = citaElement.getAttribute('data-hora');
+      
+      // ✅ NUEVO: Obtener nacionalidad y consultorio
+      const nacionalidad = citaElement.getAttribute('data-nacionalidad') || 'Peru';
+      const consultorioNombre = citaElement.getAttribute('data-consultorio-nombre') || '{{ consultorio }}';
 
       document.getElementById('modalCitaId').value = id;
       document.getElementById('modalPaciente').value = paciente;
@@ -280,6 +406,18 @@
       document.getElementById('modalDoctor').value = doctor;
       document.getElementById('modalFecha').value = fecha;
       document.getElementById('modalHora').value = hora;
+      
+      // ✅ CRÍTICO: Guardar nacionalidad y consultorio de la cita
+      document.getElementById('modalNacionalidad').value = nacionalidad;
+      document.getElementById('modalConsultorioNombre').value = consultorioNombre;
+      
+      // Log para debugging
+      console.log('Cita cargada:', {
+        id: id,
+        paciente: paciente,
+        nacionalidad: nacionalidad,
+        consultorio: consultorioNombre
+      });
 
       loadHorasModal(fecha, doctor, hora);
 
@@ -330,34 +468,30 @@
     }
 
     function editarxd() {
-    const citaId = document.getElementById('modalCitaId').value;
-    const nuevaFecha = document.getElementById('modalFecha').value;
-    const nuevaHora = document.getElementById('modalHora').value;
-    
-    // 👇 Nuevos valores de Motivo y Celular
-    const nuevoMotivo = document.getElementById('modalMotivo').value;
-    const nuevoCelular = document.getElementById('modalCelular').value;
+      const citaId = document.getElementById('modalCitaId').value;
+      const nuevaFecha = document.getElementById('modalFecha').value;
+      const nuevaHora = document.getElementById('modalHora').value;
+      const nuevoMotivo = document.getElementById('modalMotivo').value;
+      const nuevoCelular = document.getElementById('modalCelular').value;
 
-    const formData = new FormData();
-    formData.append('id', citaId);
-    formData.append('fecha', nuevaFecha);
-    formData.append('hora', nuevaHora);
-    
-    // 👇 Agregamos los nuevos campos al FormData
-    formData.append('motivo', nuevoMotivo);
-    formData.append('celular', nuevoCelular);
+      const formData = new FormData();
+      formData.append('id', citaId);
+      formData.append('fecha', nuevaFecha);
+      formData.append('hora', nuevaHora);
+      formData.append('motivo', nuevoMotivo);
+      formData.append('celular', nuevoCelular);
 
-    fetch('/editarxd', {
+      fetch('/editarxd', {
         method: 'POST',
         body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+      })
+      .then(response => response.json())
+      .then(data => {
         if (data.success) {
-            showConfirmationMessage(data.message);
+          showConfirmationMessage(data.message);
         }
-    });
-  }
+      });
+    }
   </script>
 
 {% endblock %}

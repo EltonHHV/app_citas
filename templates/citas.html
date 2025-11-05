@@ -64,13 +64,18 @@
         required>
     </div>
 
-    <!-- Doctor -->
+    <!-- Doctor/Sede -->
     <div class="mb-4">
       <label for="doctor_select" class="form-label">Doctor</label>
       <select id="doctor_select" name="doctor" class="form-select" required>
         <option value=""></option>
         {% for d in doctores %}
-          <option value="{{ d['doctores'] }}" {% if d['doctores'] == doctor_default %}selected{% endif %}>
+          <option 
+            value="{{ d['doctores'] }}" 
+            data-doctor-id="{{ d['id'] }}"
+            data-consultorio-id="{{ d['consultorio_id'] }}"
+            data-sedes="{{ d['sedes'] }}"
+            {% if d['doctores'] == doctor_default %}selected{% endif %}>
             {{ d['doctores'] }}
           </option>
         {% endfor %}
@@ -98,6 +103,9 @@
       </select>
     </div>
 
+    <!-- Campo oculto para enviar el doctor_id -->
+    <input type="hidden" id="doctor_id_hidden" name="doctor_id" value="">
+
     <button id="btnSubmitCita" class="btn btn-success w-100" type="submit">Guardar Cita</button>
 
   </form>
@@ -114,6 +122,7 @@
   const doctorSelect      = document.getElementById("doctor_select");
   const fechaInput        = document.getElementById("fecha_input");
   const horaSelect        = document.getElementById("hora_select");
+  const doctorIdHidden    = document.getElementById("doctor_id_hidden");
 
   const horarios = [
     '08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM',
@@ -129,11 +138,11 @@
   // Mostrar u ocultar el campo 'Otro' según la selección del motivo
   motivoSelect.addEventListener("change", function() {
     if (motivoSelect.value === "Otro") {
-      motivoOtroContainer.classList.remove("d-none"); // Mostrar el campo de texto
-      motivoOtroContainer.classList.add("d-block"); // Mostrar el campo de texto
+      motivoOtroContainer.classList.remove("d-none");
+      motivoOtroContainer.classList.add("d-block");
     } else {
-      motivoOtroContainer.classList.remove("d-block"); // Ocultar el campo de texto
-      motivoOtroContainer.classList.add("d-none"); // Ocultar el campo de texto
+      motivoOtroContainer.classList.remove("d-block");
+      motivoOtroContainer.classList.add("d-none");
     }
   });
 
@@ -153,25 +162,34 @@
 
   let sending = false;
   formulario.addEventListener("submit", function (event) {
-    if (sending) { event.preventDefault(); return; } // bloquea reenvío
-    if (!validarCelular()) {                        // si no pasa validación, no envía
+    if (sending) { event.preventDefault(); return; }
+    if (!validarCelular()) {
       event.preventDefault();
       return;
     }
+    
+    // Actualizar el campo oculto con el doctor_id antes de enviar
+    const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+    if (selectedOption) {
+      doctorIdHidden.value = selectedOption.getAttribute('data-doctor-id');
+    }
+    
     sending = true;
     const btn = document.getElementById("btnSubmitCita");
-    if (btn) btn.disabled = true;                   // deshabilita botón
-    // Deja que el submit nativo ocurra (no llames formulario.submit())
+    if (btn) btn.disabled = true;
   });
-
-
-
 
   // Inicialización del formulario para la opción "Otro"
   document.addEventListener("DOMContentLoaded", function() {
     if (motivoSelect.value === "Otro") {
       motivoOtroContainer.classList.remove("d-none");
       motivoOtroContainer.classList.add("d-block");
+    }
+    
+    // Establecer el doctor_id inicial si hay un doctor seleccionado por defecto
+    const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+      doctorIdHidden.value = selectedOption.getAttribute('data-doctor-id');
     }
   });
 
@@ -205,22 +223,40 @@
   async function actualizarHoras() {
     const fecha  = fechaInput.value;
     const doctor = doctorSelect.value;
+    const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+    
     horaSelect.innerHTML = "";
     let ocupadas = [];
-    if (fecha && doctor) {
+    let tieneSedes = false;
+    
+    if (fecha && doctor && selectedOption) {
+      const doctorId = selectedOption.getAttribute('data-doctor-id');
+      const sedes = selectedOption.getAttribute('data-sedes');
+      tieneSedes = (sedes === 'SI');
+      
+      // Actualizar el campo oculto
+      doctorIdHidden.value = doctorId;
+      
+      // Obtener solo las horas ocupadas de la sede/doctor seleccionado
+      // Cada sede es independiente
       const res = await fetch(
         `/horas_ocupadas?fecha=${encodeURIComponent(fecha)}` +
         `&doctor=${encodeURIComponent(doctor)}`
       );
       ocupadas = await res.json();
     }
+    
     horarios.forEach(h => {
       const opt = document.createElement("option");
       opt.value = h;
-      opt.textContent = h + (ocupadas.includes(h) ? " (ocupado)" : "");
+      opt.textContent = h + (ocupadas.includes(h) ? " (OCUPADO)" : "");
       if (ocupadas.includes(h)) {
         opt.style.color = "#dc3545";
-        opt.disabled = true;
+        // Solo deshabilitar si NO tiene múltiples sedes
+        // Si tiene sedes=SI, se puede agendar a la misma hora
+        if (!tieneSedes) {
+          opt.disabled = true;
+        }
       }
       horaSelect.appendChild(opt);
     });

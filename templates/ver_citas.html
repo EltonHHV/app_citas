@@ -2,10 +2,13 @@
 
 {% block content %}
   <h2>Calendario del Mes {{ start_of_week.strftime('%B') }}</h2>
+  
   <form method="POST" class="mb-3">
     <button type="submit" name="action" value="prev" class="btn btn-celeste">Semana Anterior</button>
     <button type="submit" name="action" value="next" class="btn btn-celeste">Semana Siguiente</button>
   </form>
+
+  
 
   <!-- Botón para ver las citas de manera mensual -->
   <form action="{{ url_for('ver_citas_mensual') }}" method="GET">
@@ -46,10 +49,10 @@
               {% set lista = ocupadas.get((fecha, hora_str), []) %}
 
               {% if lista|length > 1 %}
-                <td class="multiple text-dark"
+                <td class="multiple text-white"
                     data-citas='{{ lista|tojson }}'
-                    style="background-color: red; cursor:pointer; text-align:center;">
-                  OCUPADO
+                    style="background-color: orange; cursor:pointer; text-align:center;">
+                  {{ lista|length }} CITAS
                 </td>
               {% elif lista|length == 1 %}
                 {% set c = lista[0] %}
@@ -146,19 +149,55 @@
 
 <!-- Script para abrir WhatsApp -->
 <script>
-  function formatPeruNumber(num) {
+  // ============================================================
+  // CONFIGURACIÓN MULTINACIONAL DE WHATSAPP
+  // ============================================================
+  
+  const PAIS_CONFIG = {
+    'Peru': {
+      codigo: '51',
+      digitos: 9,
+      nombre: 'Perú',
+      placeholder: '912345678'
+    },
+    'Chile': {
+      codigo: '56',
+      digitos: 9,
+      nombre: 'Chile',
+      placeholder: '912345678'
+    }
+  };
+
+  const nacionalidad = "{{ nacionalidad }}";
+  const config = PAIS_CONFIG[nacionalidad] || PAIS_CONFIG['Peru'];
+
+  /**
+   * Formatea el número según el país
+   */
+  function formatPhoneNumber(num) {
     num = num.replace(/[^\d]/g, '');
-    if (num.length === 9) num = "51" + num;
-    if (num.length !== 11 || !num.startsWith("51")) return false;
+    
+    if (num.length === config.digitos) {
+      num = config.codigo + num;
+    }
+    
+    const longitudEsperada = config.codigo.length + config.digitos;
+    if (num.length !== longitudEsperada || !num.startsWith(config.codigo)) {
+      return false;
+    }
+    
     return num;
   }
 
+  /**
+   * Abre WhatsApp sin mensaje
+   */
   function openWhatsApp() {
     var celular = document.getElementById("modalCelular").value;
-    var numero = formatPeruNumber(celular);
+    var numero = formatPhoneNumber(celular);
 
     if (!numero) {
-      alert("Ingrese un número válido de Perú (9 dígitos, ejemplo: 912345678)");
+      alert(`Ingrese un número válido de ${config.nombre} (${config.digitos} dígitos, ejemplo: ${config.placeholder})`);
       return;
     }
 
@@ -170,6 +209,7 @@
     window.open(whatsappUrl, "_blank");
   }
 </script>
+
 
 
 <!-- Modal para agendar nueva cita -->
@@ -216,11 +256,21 @@
             <input id="modal_celular_input" type="text" name="celular" class="form-control" required>
           </div>
 
-          <!-- Mostrar solo el doctor autenticado -->
+          <!-- Mostrar doctores/sedes según configuración -->
           <div class="mb-4">
             <label for="modal_doctor_select" class="form-label">Doctor</label>
             <select id="modal_doctor_select" name="doctor" class="form-select" required>
-              <option value="{{ doctor_name }}" selected>{{ doctor_name }}</option>
+              <option value=""></option>
+              {% for d in doctores_select %}
+                <option 
+                  value="{{ d['doctores'] }}"
+                  data-doctor-id="{{ d['id'] }}"
+                  data-consultorio-id="{{ d['consultorio_id'] }}"
+                  data-sedes="{{ d['sedes'] }}"
+                  {% if d['doctores'] == doctor_name %}selected{% endif %}>
+                  {{ d['doctores'] }}
+                </option>
+              {% endfor %}
             </select>
           </div>
 
@@ -241,6 +291,7 @@
               <!-- Opción fija, se rellena por JS -->
             </select>
             <input type="hidden" name="hora" id="modal_hora_hidden">
+            <input type="hidden" name="doctor_id" id="modal_doctor_id_hidden">
           </div>
         </div>
         <div class="modal-footer">
@@ -288,7 +339,7 @@ async function loadHorasModal(fecha, doctor, horaSel) {
         opt.disabled = false;
       } else {
         opt.style.color = '#dc3545';
-        opt.disabled = true;
+        opt.disabled = false;  // NO deshabilitar, solo mostrar en rojo
       }
     }
     if (esMismaFechaOriginal && esHoraOriginal) {
@@ -359,33 +410,47 @@ document.querySelectorAll('td.multiple').forEach(cell => {
 
 
 
-// --------- MODAL DE NUEVA CITA desde SEMANA (mejorado) ---------
+// --------- MODAL DE NUEVA CITA desde SEMANA (mejorado para múltiples sedes) ---------
 document.querySelectorAll('td:not(.ocupada):not(.multiple)[data-fecha]').forEach(cell => {
   cell.addEventListener('click', () => {
     const fecha = cell.getAttribute('data-fecha');
     const hora = cell.getAttribute('data-hora');
+    
     document.getElementById("modal_fecha_input").value = fecha;
-    document.getElementById("modal_fecha_input").readOnly = true; // Bloquea edición
+    document.getElementById("modal_fecha_input").readOnly = true;
     document.getElementById("modal_hora_select").innerHTML = `<option value="${hora}">${hora}</option>`;
     document.getElementById("modal_hora_select").disabled = true;
     document.getElementById("modal_hora_select").value = hora;
     document.getElementById("modal_hora_hidden").value = hora;
+    
     // Limpia otros campos
     document.getElementById("modal_paciente_input").value = "";
     document.getElementById("modal_celular_input").value = "";
     document.getElementById("modal_motivo_select").value = "";
-    document.getElementById("modal_doctor_select").value = "";
     document.getElementById("modal_motivo_otro").value = "";
-
-    // 👇 Seleccionar automáticamente la segunda opción del combo de doctores (índice 1)
+    
+    // Seleccionar automáticamente la segunda opción del combo de doctores si existe
     const selectDoctor = document.getElementById("modal_doctor_select");
     if (selectDoctor.options.length > 1) {
       selectDoctor.selectedIndex = 1;
+      
+      // Actualizar el campo oculto doctor_id
+      const selectedOption = selectDoctor.options[selectDoctor.selectedIndex];
+      if (selectedOption) {
+        document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
+      }
     }
-
 
     new bootstrap.Modal(document.getElementById('nuevoModalCita')).show();
   });
+});
+
+// Actualizar doctor_id cuando se cambie el select de doctor
+document.getElementById("modal_doctor_select").addEventListener("change", function() {
+  const selectedOption = this.options[this.selectedIndex];
+  if (selectedOption) {
+    document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
+  }
 });
 
 
@@ -432,12 +497,19 @@ document.addEventListener("DOMContentLoaded", function() {
     modalMotivoOtroContainer.classList.remove("d-none");
     modalMotivoOtroContainer.classList.add("d-block");
   }
+  
+  // Establecer el doctor_id inicial si hay un doctor seleccionado por defecto
+  const selectDoctor = document.getElementById("modal_doctor_select");
+  const selectedOption = selectDoctor.options[selectDoctor.selectedIndex];
+  if (selectedOption && selectedOption.value) {
+    document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
+  }
 });
 // ----- Validar celular (9 dígitos) -----
 const modalForm = document.getElementById("formNuevaCita");
 let sendingModal = false;
 modalForm.addEventListener("submit", function(event) {
-  if (sendingModal) { event.preventDefault(); return; } // anti-doble click
+  if (sendingModal) { event.preventDefault(); return; }
   const celular = modalCelularInput.value.trim();
   if (!/^\d{9}$/.test(celular)) {
     event.preventDefault();
@@ -448,7 +520,6 @@ modalForm.addEventListener("submit", function(event) {
   sendingModal = true;
   const btn = document.getElementById("btnSubmitModalCita");
   if (btn) btn.disabled = true;
-  // Deja que el submit nativo ocurra
 });
 
 

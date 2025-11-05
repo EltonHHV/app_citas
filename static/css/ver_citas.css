@@ -24,6 +24,14 @@
     background-color: #F820F8 !important;  /* Magenta */
 }
 
+.doctor-rosado {
+    background-color: #FF69B4 !important;  /* Rosado */
+}
+
+.doctor-gris {
+    background-color: #808080 !important;  /* Gris */
+}
+
 .doctor-default {
     background-color: #808080 !important;  /* Gris por defecto */
 }
@@ -291,4 +299,12 @@ table, .cita {
 #whatsappBtnPersonalizado img {
   width: 50px;
   height: 50px;
+}
+
+
+.leyenda-doctores .circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-block;
 }
