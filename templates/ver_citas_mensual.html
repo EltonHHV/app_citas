@@ -140,7 +140,13 @@
               </button>
             </div>
             <div class="mb-3">
-              <label for="modalDoctor" class="form-label">Doctor</label>
+              <label for="modalDoctor" class="form-label">
+                {% if consultorio_id in [12, 14] %}
+                  Sede
+                {% else %}
+                  Doctor
+                {% endif %}
+              </label>
               <input type="text" id="modalDoctor" class="form-control" readonly>
             </div>
             <div class="mb-3">
@@ -177,12 +183,11 @@
     </div>
   </div>
 
-
-  <script>
+<script>
   // ============================================================
   // CONFIGURACIÓN MULTINACIONAL DE WHATSAPP
   // ============================================================
-  
+
   const PAIS_CONFIG = {
     'Peru': {
       codigo: '51',
@@ -197,6 +202,10 @@
       placeholder: '912345678'
     }
   };
+
+  // Obtener el nombre de la clínica y el consultorio_id desde el backend
+  const nombreClinica = "{{ consultorio }}";  // Usamos el valor pasado del backend
+  const consultorioId = "{{ consultorio_id }}";  // Usamos el ID del consultorio pasado del backend
 
   /**
    * ✅ NUEVO: Obtiene la configuración del país de la cita actual
@@ -238,43 +247,27 @@
   }
 
   /**
-   * ✅ MODIFICADO: Abre WhatsApp sin mensaje
-   */
-  function openWhatsApp() {
-    const config = getConfig();
-    var celular = document.getElementById("modalCelular").value;
-    var numero = formatPhoneNumber(celular);
-    
-    if (!numero) {
-      alert(`Ingrese un número válido de ${config.nombre} (${config.digitos} dígitos, ejemplo: ${config.placeholder})`);
-      return;
-    }
-
-    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    var whatsappUrl = isMobile
-      ? "https://wa.me/" + numero
-      : "https://web.whatsapp.com/send?phone=" + numero;
-
-    console.log('Abriendo WhatsApp:', whatsappUrl);
-    window.open(whatsappUrl, "_blank");
-  }
-
-  /**
    * ✅ MODIFICADO: Abre WhatsApp con mensaje personalizado de recordatorio
    */
   function openWhatsAppPersonalizado() {
     const config = getConfig();
-    var celular = document.getElementById("modalCelular").value;
-    var numero = formatPhoneNumber(celular);
-    var nombreClinica = document.getElementById("modalConsultorioNombre").value;
-    var fechaCita = document.getElementById("modalFecha").value;
-    var horaCita = document.getElementById("modalHora").value;
+    
+    // Obtener los datos directamente del modal
+    var paciente = document.getElementById("modalPaciente").value;  // Nombre del paciente
+    var motivo = document.getElementById("modalMotivo").value;  // Motivo de la cita
+    var celular = document.getElementById("modalCelular").value;  // Celular del paciente
+    var fechaCita = document.getElementById("modalFecha").value;  // Fecha de la cita
+    var horaCita = document.getElementById("modalHora").value;  // Hora de la cita
 
+    // Verificamos que el celular sea válido
+    var numero = formatPhoneNumber(celular);
+    
     if (!numero) {
       alert(`Ingrese un número válido de ${config.nombre} (${config.digitos} dígitos, ejemplo: ${config.placeholder})`);
       return;
     }
     
+    // Verificamos que la fecha y hora sean válidas
     if (!(fechaCita && horaCita)) {
       alert("Por favor, complete todos los campos de la cita.");
       return;
@@ -315,10 +308,22 @@
       fraseFecha = "la fecha seleccionada";
     }
 
-    var mensaje = "¡Hola! 👋😀\n";
-    mensaje += "Le escribimos de " + nombreClinica + " para recordarle su cita programada ";
-    mensaje += "para " + fraseFecha + " a las " + horaCita + ". 🕒\n";
-    mensaje += "Agradecemos tu puntualidad y confianza 😊. ¡Nos vemos pronto! ❤️";
+    // Condicional para el mensaje cuando el consultorio_id es 11
+    var mensaje = "";
+    if (consultorioId == 11) {
+      mensaje = `¡Hola, ${paciente}! 👋\n`;
+      mensaje += `Somos ${nombreClinica} de la Dra. Leidy Murga G.\n`;
+      mensaje += "Les informamos que NO ESTAMOS ACEPTANDO TARJETAS. Les pedimos que el pago sea realizado en efectivo, Plin, Yape o transferencia. Si es en efectivo, por favor, asegúrese de que sea con montos exactos.\n\n";
+      mensaje += `Te recordamos tu cita programada ${fraseFecha} a las ${horaCita}. 🕒\n`;
+      mensaje += "Favor de confirmar tu asistencia.\n\n";
+      mensaje += "Dirección:\nCalle Talara / Gal. Jonas Shuan, 2do piso, Casma.";
+    } else {
+      mensaje = `¡Hola, ${paciente}! 👋😀\n`;
+      mensaje += `Somos ${nombreClinica} te recordamos tu cita programada ${fraseFecha} a las ${horaCita}. 🕒\n`;
+      mensaje += `Motivo: ${motivo}\n`;
+      mensaje += "Agradecemos tu puntualidad y confianza 😊. ¡Nos vemos pronto! ❤️";
+    }
+
     var urlMensaje = encodeURIComponent(mensaje);
 
     var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -330,6 +335,7 @@
     window.open(whatsappUrl, "_blank");
   }
 </script>
+
 
 
   <!-- Script para cargar horas disponibles -->

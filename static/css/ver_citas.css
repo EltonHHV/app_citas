@@ -5,7 +5,7 @@
 
 /* Colores de los doctores, aplicados a los círculos en la leyenda */
 .doctor-verde {
-    background-color: #00FF00 !important;  /* Verde */
+    background-color: #49c549 !important;  /* Verde */
 }
 
 .doctor-azul {
@@ -21,7 +21,7 @@
 }
 
 .doctor-magenta {
-    background-color: #F820F8 !important;  /* Magenta */
+    background-color: #5beeeb !important;  /* Magenta */
 }
 
 .doctor-rosado {
@@ -32,9 +32,14 @@
     background-color: #808080 !important;  /* Gris */
 }
 
+.doctor-amarillo {
+    background-color: #FFFF00 !important;  /* Amarillo */
+}
+
 .doctor-default {
     background-color: #808080 !important;  /* Gris por defecto */
 }
+
 
 
 /* Estilos para la leyenda de los doctores */

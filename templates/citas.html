@@ -65,22 +65,29 @@
     </div>
 
     <!-- Doctor/Sede -->
-    <div class="mb-4">
-      <label for="doctor_select" class="form-label">Doctor</label>
-      <select id="doctor_select" name="doctor" class="form-select" required>
-        <option value=""></option>
-        {% for d in doctores %}
-          <option 
-            value="{{ d['doctores'] }}" 
-            data-doctor-id="{{ d['id'] }}"
-            data-consultorio-id="{{ d['consultorio_id'] }}"
-            data-sedes="{{ d['sedes'] }}"
-            {% if d['doctores'] == doctor_default %}selected{% endif %}>
-            {{ d['doctores'] }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+  <div class="mb-4">
+    <label for="doctor_select" class="form-label">
+      {% if consultorio_id in [12, 14] %}
+        Sede
+      {% else %}
+        Doctor
+      {% endif %}
+    </label>
+    <select id="doctor_select" name="doctor" class="form-select" required>
+      <option value=""></option>
+      {% for d in doctores %}
+        <option 
+          value="{{ d['doctores'] }}" 
+          data-doctor-id="{{ d['id'] }}"
+          data-consultorio-id="{{ d['consultorio_id'] }}"
+          data-sedes="{{ d['sedes'] }}"
+          {% if d['doctores'] == doctor_default %}selected{% endif %}>
+          {{ d['doctores'] }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
 
     <!-- Fecha -->
     <div class="mb-4">

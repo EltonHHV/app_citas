@@ -27,7 +27,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Método para interactuar con la base de datos
 
-
 CONSULTORIOS = {
     1: "de la Clínica Odontológica Godental",
     2: "de la Clínica Dental Virodent",
@@ -42,6 +41,7 @@ CONSULTORIOS = {
     12: "del CONSULTORIO OBSTETRICO FERMUJER",
     13: "de la CLINICA DENTAL SOMI",
 }
+
 
 
 # Método para interactuar con la base de datos
@@ -134,7 +134,6 @@ def ver_citas():
     especialidad_doctor = doctor_info[0].get('especialidad', 'Dental')
 
     # Imprimir consultorio_id para ver qué estamos recibiendo
-    print(f"Consultorio ID recibido: {consultorio_id}")
 
     # Obtener información del consultorio del doctor logueado
     consultorio_data = conn.table('consultorios').select('nombre', 'nacionalidad').eq('id', consultorio_id).execute().data
@@ -192,18 +191,15 @@ def ver_citas():
 
         # ✅ NUEVO: Agregar nacionalidad del consultorio de la cita
         cita_consultorio_id = cita.get('consultorio_id')
-        print(f"Consultorio ID de la cita: {cita_consultorio_id}")
         
         # Si el consultorio_id es 13, asignamos directamente "Chile" como nacionalidad
         if cita_consultorio_id == 13:
             cita['nacionalidad'] = 'Chile'
             cita['consultorio_nombre'] = "Consultorio Chile"
-            print("Nacionalidad asignada directamente: Chile")
         else:
             # En cualquier otro caso, usamos el valor por defecto "Peru"
             cita['nacionalidad'] = cita.get("nacionalidad", "Peru")  # Aquí es donde respetamos "Peru" por defecto
             cita['consultorio_nombre'] = consultorio_nombre
-            print(f"Nacionalidad asignada: {cita['nacionalidad']}")
 
 
     total_doctores = len(doctores_data)
@@ -295,6 +291,7 @@ def ver_citas():
         tiene_multiples_sedes=tiene_sedes,
         consultorio_nombre=consultorio_nombre,  # Nombre del consultorio del doctor logueado
         nacionalidad=nacionalidad,  # Aseguramos que la nacionalidad es pasada correctamente
+        consultorio_id=consultorio_id,
         timedelta=timedelta
     )
 
@@ -391,8 +388,10 @@ def nueva_cita():
         hoy=hoy,
         valores=request.form,
         doctor_default=doctor_default,
-        tiene_multiples_sedes=tiene_sedes
+        tiene_multiples_sedes=tiene_sedes,
+        consultorio_id=consultorio_id  # Pasamos el consultorio_id al frontend
     )
+
 
 
 @app.route("/horas_ocupadas")
@@ -540,8 +539,7 @@ def logout():
 
 
 
-from datetime import datetime, timedelta, date
-import calendar
+
 from datetime import datetime, timedelta, date
 import calendar
 
@@ -566,7 +564,6 @@ def ver_citas_mensual():
     tiene_sedes = doctor_data[0]['sedes'] == 'SI'
     
     # Imprimir el consultorio_id en la consola
-    print(f"Consultorio ID: {consultorio_id}")
 
     # Obtener información del consultorio del doctor logueado
     consultorio_data = conn.table('consultorios').select('nombre', 'nacionalidad').eq('id', consultorio_id).execute().data
@@ -660,34 +657,28 @@ def ver_citas_mensual():
         cita_consultorio_id = c.get('consultorio_id')
 
         # Asegurarse de que el ID del consultorio sea un número entero para evitar comparaciones incorrectas
-        print(f"Consultorio ID recibido: {cita_consultorio_id}")
 
         # Convertir el ID a int (si es necesario) para asegurarnos de que sea comparable con las claves en el diccionario
         cita_consultorio_id = int(cita_consultorio_id) if cita_consultorio_id else None
 
         # Verificar que el ID está bien convertido a entero
-        print(f"Consultorio ID convertido: {cita_consultorio_id}")
 
         # Si el consultorio_id es 13, asignamos directamente 'Chile'
         if cita_consultorio_id == 13:
             nacionalidad_cita = 'Chile'
             consultorio_nombre_cita = "la CLINICA DENTAL SOMI"  # Asignamos un nombre de consultorio para Chile
-            print("Nacionalidad asignada directamente: Chile")
         else:
             # Verificar si el consultorio ID está en el diccionario de consultorios
             if cita_consultorio_id and cita_consultorio_id in consultorios_dict:
                 consultorio_info = consultorios_dict[cita_consultorio_id]  # Accedemos al consultorio
 
-                print(f"Consultorio encontrado: {consultorio_info}")
 
                 nacionalidad_cita = consultorio_info['nacionalidad']
                 consultorio_nombre_cita = consultorio_info['nombre']  # Asignamos el nombre del consultorio encontrado
-                print(f"Nacionalidad asignada: {nacionalidad_cita}")
             else:
                 # Si el consultorio no se encuentra, asignamos la nacionalidad por defecto como Perú
                 nacionalidad_cita = 'Peru'  # Default es Perú
                 consultorio_nombre_cita = consultorio_nombre  # Usamos el nombre del consultorio predeterminado
-                print(f"Consultorio no encontrado, asignada nacionalidad por defecto: {nacionalidad_cita}")
 
         # Agregar la cita a las ocupadas
         ocupadas[key].append({
@@ -726,6 +717,10 @@ def ver_citas_mensual():
 
     hoy = datetime.now(tz_peru).date()
 
+    consultorio_nombre = CONSULTORIOS.get(consultorio_id, "Nuestra clínica")  # Valor predeterminado si no se encuentra el consultorio
+
+    print("Consultorio consultorio_nombre:", consultorio_nombre)
+
     return render_template(
         "ver_citas_mensual.html",
         start_of_month=start_of_month,
@@ -733,8 +728,9 @@ def ver_citas_mensual():
         ocupadas=ocupadas,
         today=hoy,
         consultorio=consultorio_nombre,  # Nombre del consultorio del doctor logueado
+        consultorio_id=consultorio_id,  # Pasamos el consultorio_id
         tiene_sedes=tiene_sedes,
-        colores_doctores=colores_doctores
+        colores_doctores=colores_doctores,
     )
 
 

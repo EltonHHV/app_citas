@@ -121,10 +121,19 @@
               <img src="{{ url_for('static', filename='wsp.png') }}" alt="WhatsApp" style="width: 50px; height: 50px;">
             </button>
           </div>
+          
           <div class="mb-3">
-            <label for="modalDoctor" class="form-label">Doctor</label>
+            <label for="modalDoctor" class="form-label">
+              {% if consultorio_id in [12, 14] %}
+                Sede
+              {% else %}
+                Doctor
+              {% endif %}
+            </label>
             <input type="text" id="modalDoctor" class="form-control" readonly>
           </div>
+
+
           <div class="mb-3">
             <label for="modalFecha" class="form-label">Fecha</label>
             <input type="date" name="fecha" id="modalFecha" class="form-control" required>
@@ -258,7 +267,13 @@
 
           <!-- Mostrar doctores/sedes según configuración -->
           <div class="mb-4">
-            <label for="modal_doctor_select" class="form-label">Doctor</label>
+            <label for="modal_doctor_select" class="form-label">
+              {% if consultorio_id in [12, 14] %}
+                Sede
+              {% else %}
+                Doctor
+              {% endif %}
+            </label>
             <select id="modal_doctor_select" name="doctor" class="form-select" required>
               <option value=""></option>
               {% for d in doctores_select %}
@@ -273,6 +288,7 @@
               {% endfor %}
             </select>
           </div>
+
 
           <div class="mb-4">
             <label for="modal_fecha_input" class="form-label">Fecha</label>
