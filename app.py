@@ -38,7 +38,7 @@ CONSULTORIOS = {
     9: "del Consultorio Obstétrico Happuch",
     10: "de la CLÍNICA BRAVO'S DENTAL",
     11: "de la CLÍNICA CLARDENT",
-    12: "del CONSULTORIO OBSTETRICO FERMUJER❤️",
+    12: "del CONSULTORIO OBSTETRICO FERMUJER🌸",
     13: "de la CLINICA DENTAL SOMI",
     14: "del CONSULTORIO OBSTETRICO PROMUJER❤️",
     15: "del CONSULTORIO OBSTETRICO DE MUJER A MUJER❤️",
