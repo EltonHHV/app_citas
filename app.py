@@ -15,6 +15,8 @@ import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, session
 from supabase import create_client, Client
 from functools import wraps
+
+
 app = Flask(__name__)
 app.secret_key = 'xddx'  # Cambia esto por una clave secreta real
 
