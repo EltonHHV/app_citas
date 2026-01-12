@@ -113,7 +113,7 @@ def login():
 
     return render_template("login.html")  # Si el método es GET, mostramos el formulario de login
 
-
+ 
 
 @app.route("/ver_citas", methods=["GET", "POST"])
 @check_subscription
