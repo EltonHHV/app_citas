@@ -213,27 +213,23 @@ def ver_citas():
     doctores = {}
     for c in filas:
         fecha = c["Fecha"]
-        hora_orig = c["Hora"]
+        hora_orig = c.get("Hora", "")  # ← Usa .get() para evitar KeyError
+        
+        # ✅ VALIDACIÓN: Si la hora está vacía, salta esta cita
+        if not hora_orig or not hora_orig.strip():
+            continue
+        
         try:
-                        # En app.py línea ~215-218
-            print(f"DEBUG: Total citas obtenidas: {len(citas)}")
-            for cita in citas:
-                print(f"DEBUG: Cita ID: {cita.get('id')}, Hora: '{cita.get('hora')}'")
-                
-            hora_orig = cita['hora']  # o como lo obtengas
-            print(f"DEBUG: Procesando hora_orig: '{hora_orig}', tipo: {type(hora_orig)}")
-
-            if not hora_orig or not hora_orig.strip():
-                print(f"WARNING: Hora vacía detectada en cita {cita.get('id')}")
-                continue  # Salta esta cita
-
             hora_obj = datetime.strptime(hora_orig, "%I:%M %p")
-
         except ValueError:
-            hora_obj = datetime.strptime(hora_orig, "%H:%M")
+            try:
+                hora_obj = datetime.strptime(hora_orig, "%H:%M")
+            except ValueError:
+                # Si ningún formato funciona, salta esta cita
+                continue
+        
         hora_fmt = hora_obj.strftime("%H:%M")
         key = (fecha, hora_fmt)
-
         color_class = {
             "rojo": "doctor-rojo",
             "azul": "doctor-azul",
