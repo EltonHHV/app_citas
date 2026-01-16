@@ -1,105 +1,92 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  {% set meses = {
-    'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo',
-    'April': 'Abril', 'May': 'Mayo', 'June': 'Junio',
-    'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre',
-    'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'
-  } %}
+{% set meses = {
+'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo',
+'April': 'Abril', 'May': 'Mayo', 'June': 'Junio',
+'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre',
+'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'
+} %}
 
-  <h2>Calendario del Mes {{ meses[start_of_week.strftime('%B')] }}</h2>
-  
-  <form method="POST" class="mb-3">
-    <button type="submit" name="action" value="prev" class="btn btn-celeste">Semana Anterior</button>
-    <button type="submit" name="action" value="next" class="btn btn-celeste">Semana Siguiente</button>
-  </form>
+<h2>Calendario del Mes {{ meses[start_of_week.strftime('%B')] }}</h2>
 
-  
-
-  <!-- Botón para ver las citas de manera mensual -->
-  <form action="{{ url_for('ver_citas_mensual') }}" method="GET">
-    <button type="submit" class="btn btn-outline-primary mt-3">Ver Citas del Mes</button>
-  </form>
+<form method="POST" class="mb-3">
+  <button type="submit" name="action" value="prev" class="btn btn-celeste">Semana Anterior</button>
+  <button type="submit" name="action" value="next" class="btn btn-celeste">Semana Siguiente</button>
+</form>
 
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
 
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th style="font-weight: bold; font-size: 1.2rem;">Hora</th>
-        {% set dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] %}
-        {% for i in range(7) %}
-          {% set current_day = start_of_week + timedelta(days=i) %}
-          <th style="font-weight: bold; font-size: 1.2rem;">
-            {{ dias[current_day.weekday()] }} {{ current_day.day }}
-          </th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for hour in range(8,21) %}
-        {% for minute in ['00','30'] %}
-          <tr>
-            <td>
-              {% set ampm = "AM" if hour < 12 else "PM" %}
-              {% set display_hour = hour if hour <= 12 else hour-12 %}
-              {{ '%02d:%s %s' % (display_hour, minute, ampm) }}
-            </td>
-            {% for i in range(7) %}
-              {% set fecha = (start_of_week + timedelta(days=i)).strftime('%Y-%m-%d') %}
-              {% set display_hour = hour if hour <= 12 else hour-12 %}
-              {% set ampm = "AM" if hour < 12 else "PM" %}
-              {% set hora_formateada = '%02d:%s %s' % (display_hour, minute, ampm) %}
-              {% set hora_str = '{:02d}:{}'.format(hour, minute) %}
-              {% set lista = ocupadas.get((fecha, hora_str), []) %}
+<!-- Botón para ver las citas de manera mensual -->
+<form action="{{ url_for('ver_citas_mensual') }}" method="GET">
+  <button type="submit" class="btn btn-outline-primary mt-3">Ver Citas del Mes</button>
+</form>
 
-              {% if lista|length > 1 %}
-                <td class="multiple text-white"
-                    data-citas='{{ lista|tojson }}'
-                    style="background-color: orange; cursor:pointer; text-align:center;">
-                  {{ lista|length }} CITAS
-                </td>
-              {% elif lista|length == 1 %}
-                {% set c = lista[0] %}
-                <td class="ocupada text-white {{ c.color_class }}"
-                    data-id="{{ c.id }}"
-                    data-fecha="{{ c.fecha }}"
-                    data-hora="{{ c.hora }}"
-                    data-hora-original="{{ c.hora_original }}"
-                    data-paciente="{{ c.paciente }}"
-                    data-motivo="{{ c.motivo }}"
-                    data-celular="{{ c.celular }}"
-                    data-doctor="{{ c.doctor }}"
-                    style="cursor:pointer; text-align:center;">
-                  {{ c.motivo }}
-                </td>
-              {% else %}
-                <td data-fecha="{{ fecha }}" data-hora="{{ hora_formateada }}"></td>
-              {% endif %}
-            {% endfor %}
-          </tr>
-        {% endfor %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th style="font-weight: bold; font-size: 1.2rem;">Hora</th>
+      {% set dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] %}
+      {% for i in range(7) %}
+      {% set current_day = start_of_week + timedelta(days=i) %}
+      <th style="font-weight: bold; font-size: 1.2rem;">
+        {{ dias[current_day.weekday()] }} {{ current_day.day }}
+      </th>
       {% endfor %}
-    </tbody>
-  </table>
+    </tr>
+  </thead>
+  <tbody>
+    {% for hour in range(8,21) %}
+    {% for minute in ['00','30'] %}
+    <tr>
+      <td>
+        {% set ampm = "AM" if hour < 12 else "PM" %} {% set display_hour=hour if hour <=12 else hour-12 %}
+          {{ '%02d:%s %s' % (display_hour, minute, ampm) }} </td>
+          {% for i in range(7) %}
+          {% set fecha = (start_of_week + timedelta(days=i)).strftime('%Y-%m-%d') %}
+          {% set display_hour = hour if hour <= 12 else hour-12 %} {% set ampm="AM" if hour < 12 else "PM" %} {% set
+            hora_formateada='%02d:%s %s' % (display_hour, minute, ampm) %} {% set hora_str='{:02d}:{}' .format(hour,
+            minute) %} {% set lista=ocupadas.get((fecha, hora_str), []) %} {% if lista|length> 1 %}
+      <td class="multiple text-white" data-citas='{{ lista|tojson }}'
+        style="background-color: orange; cursor:pointer; text-align:center;">
+        {{ lista|length }} CITAS
+      </td>
+      {% elif lista|length == 1 %}
+      {% set c = lista[0] %}
+      <td class="ocupada text-white {{ c.color_class }}" data-id="{{ c.id }}" data-fecha="{{ c.fecha }}"
+        data-hora="{{ c.hora }}" data-hora-original="{{ c.hora_original }}" data-paciente="{{ c.paciente }}"
+        data-motivo="{{ c.motivo }}" data-celular="{{ c.celular }}" data-doctor="{{ c.doctor }}"
+        style="cursor:pointer; text-align:center;">
+        {{ c.motivo }}
+      </td>
+      {% else %}
+      <td data-fecha="{{ fecha }}" data-hora="{{ hora_formateada }}"></td>
+      {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+    {% endfor %}
+  </tbody>
+</table>
 
-  <!-- MODALES -->
-  <!-- Selector para múltiples citas -->
-  <div class="modal fade" id="selectorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Selecciona la cita</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="list-group" id="listaCitas"></div>
-        </div>
+<!-- MODALES -->
+<!-- Selector para múltiples citas -->
+<div class="modal fade" id="selectorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Selecciona la cita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group" id="listaCitas"></div>
       </div>
     </div>
   </div>
+</div>
 
 <!-- Edición / Cancelación -->
 <div class="modal fade" id="citaModal" tabindex="-1" aria-hidden="true">
@@ -128,16 +115,20 @@
               <img src="{{ url_for('static', filename='wsp.png') }}" alt="WhatsApp" style="width: 50px; height: 50px;">
             </button>
           </div>
-          
+
           <div class="mb-3">
             <label for="modalDoctor" class="form-label">
               {% if consultorio_id in [12, 14] %}
-                Sede
+              Sede
               {% else %}
-                Doctor
+              Doctor
               {% endif %}
             </label>
-            <input type="text" id="modalDoctor" class="form-control" readonly>
+            <select id="modalDoctor" name="doctor" class="form-select" required>
+              {% for d in doctores_select %}
+              <option value="{{ d['doctores'] }}">{{ d['doctores'] }}</option>
+              {% endfor %}
+            </select>
           </div>
 
 
@@ -168,7 +159,7 @@
   // ============================================================
   // CONFIGURACIÓN MULTINACIONAL DE WHATSAPP
   // ============================================================
-  
+
   const PAIS_CONFIG = {
     'Peru': {
       codigo: '51',
@@ -192,16 +183,16 @@
    */
   function formatPhoneNumber(num) {
     num = num.replace(/[^\d]/g, '');
-    
+
     if (num.length === config.digitos) {
       num = config.codigo + num;
     }
-    
+
     const longitudEsperada = config.codigo.length + config.digitos;
     if (num.length !== longitudEsperada || !num.startsWith(config.codigo)) {
       return false;
     }
-    
+
     return num;
   }
 
@@ -240,15 +231,10 @@
         <div class="modal-body">
           <div class="mb-4">
             <label for="modal_paciente_input" class="form-label">Paciente</label>
-            <input
-              id="modal_paciente_input"
-              list="modal_pacientes"
-              name="paciente"
-              class="form-control"
-              required>
+            <input id="modal_paciente_input" list="modal_pacientes" name="paciente" class="form-control" required>
             <datalist id="modal_pacientes">
               {% for p in pacientes %}
-                <option value="{{ p['nombre'] }}"></option>
+              <option value="{{ p['nombre'] }}"></option>
               {% endfor %}
             </datalist>
           </div>
@@ -258,12 +244,13 @@
             <select id="modal_motivo_select" name="motivo" class="form-select" required>
               <option value=""></option>
               {% for m in motivos %}
-                <option>{{ m['descripcion'] }}</option>
+              <option>{{ m['descripcion'] }}</option>
               {% endfor %}
               <option value="Otro">Otro</option>
             </select>
             <div id="modal_motivo_otro_container" class="d-none">
-              <input id="modal_motivo_otro" type="text" name="motivo_otro" class="form-control mt-2" placeholder="Especifique el motivo">
+              <input id="modal_motivo_otro" type="text" name="motivo_otro" class="form-control mt-2"
+                placeholder="Especifique el motivo">
             </div>
           </div>
 
@@ -276,22 +263,19 @@
           <div class="mb-4">
             <label for="modal_doctor_select" class="form-label">
               {% if consultorio_id in [12, 14] %}
-                Sede
+              Sede
               {% else %}
-                Doctor
+              Doctor
               {% endif %}
             </label>
             <select id="modal_doctor_select" name="doctor" class="form-select" required>
               <option value=""></option>
               {% for d in doctores_select %}
-                <option 
-                  value="{{ d['doctores'] }}"
-                  data-doctor-id="{{ d['id'] }}"
-                  data-consultorio-id="{{ d['consultorio_id'] }}"
-                  data-sedes="{{ d['sedes'] }}"
-                  {% if d['doctores'] == doctor_name %}selected{% endif %}>
-                  {{ d['doctores'] }}
-                </option>
+              <option value="{{ d['doctores'] }}" data-doctor-id="{{ d['id'] }}"
+                data-consultorio-id="{{ d['consultorio_id'] }}" data-sedes="{{ d['sedes'] }}" {% if
+                d['doctores']==doctor_name %}selected{% endif %}>
+                {{ d['doctores'] }}
+              </option>
               {% endfor %}
             </select>
           </div>
@@ -299,13 +283,7 @@
 
           <div class="mb-4">
             <label for="modal_fecha_input" class="form-label">Fecha</label>
-            <input
-              id="modal_fecha_input"
-              type="date"
-              name="fecha"
-              class="form-control"
-              readonly
-              required>
+            <input id="modal_fecha_input" type="date" name="fecha" class="form-control" readonly required>
           </div>
 
           <div class="mb-4">
@@ -327,223 +305,230 @@
 
 
 <script>
-document.getElementById('modalFecha').setAttribute('min', new Date().toISOString().split('T')[0]);
-const horarios = [
-  '08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM',
-  '10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM',
-  '01:00 PM','01:30 PM','02:00 PM','02:30 PM','03:00 PM',
-  '03:30 PM','04:00 PM','04:30 PM','05:00 PM','05:30 PM',
-  '06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM'
-];
-let fechaOriginalCita = '';
-let horaOriginalCita = '';
-function formatearHora(hora24h) {
-  const [horas, minutos] = hora24h.split(':');
-  let hora = parseInt(horas);
-  const periodo = hora >= 12 ? 'PM' : 'AM';
-  hora = hora % 12 || 12;
-  return `${hora.toString().padStart(2, '0')}:${minutos} ${periodo}`;
-}
-async function loadHorasModal(fecha, doctor, horaSel) {
-  const select = document.getElementById('modalHora');
-  select.innerHTML = '';
-  const res = await fetch(`/horas_ocupadas?fecha=${fecha}&doctor=${encodeURIComponent(doctor)}`);
-  const ocup = await res.json();
-  const ocupadas = ocup.map(hora => hora.replace(" (ocupado)", ""));
-  horarios.forEach(h => {
-    const opt = document.createElement('option');
-    opt.value = h;
-    opt.textContent = h;
-    const esMismaFechaOriginal = fecha === fechaOriginalCita;
-    const esHoraOriginal = h === horaOriginalCita;
-    if (ocupadas.includes(h)) {
-      if (esMismaFechaOriginal && esHoraOriginal) {
-        opt.style.color = '';
-        opt.disabled = false;
-      } else {
-        opt.style.color = '#dc3545';
-        opt.disabled = false;  // NO deshabilitar, solo mostrar en rojo
-      }
-    }
-    if (esMismaFechaOriginal && esHoraOriginal) {
-      opt.selected = true;
-    }
-    select.appendChild(opt);
-  });
-}
-function fillEditModal(c) {
-  document.getElementById('modalCitaId').value = c.id;
-  document.getElementById('modalFecha').value = c.fecha;
-  document.getElementById('modalPaciente').value = c.paciente;
-  document.getElementById('modalMotivo').value = c.motivo;
-  document.getElementById('modalCelular').value = c.celular;
-  document.getElementById('modalDoctor').value = c.doctor;
-  fechaOriginalCita = c.fecha;
-  horaOriginalCita = c.hora_original || formatearHora(c.hora);
-  loadHorasModal(c.fecha, c.doctor, horaOriginalCita).then(() => {
-    new bootstrap.Modal(document.getElementById('citaModal')).show();
-  });
-}
-document.getElementById('modalFecha').addEventListener('change', function() {
-  const fechaSeleccionada = this.value;
-  const doctor = document.getElementById('modalDoctor').value;
-  loadHorasModal(fechaSeleccionada, doctor, horaOriginalCita);
-});
-document.querySelectorAll('td.ocupada').forEach(cell => {
-  cell.addEventListener('click', () => {
-    const horaOriginal = cell.dataset.horaOriginal;
-    const c = {
-      id: cell.dataset.id,
-      fecha: cell.dataset.fecha,
-      hora: cell.dataset.hora,
-      hora_original: horaOriginal || formatearHora(cell.dataset.hora),
-      paciente: cell.dataset.paciente,
-      motivo: cell.dataset.motivo,
-      celular: cell.dataset.celular,
-      doctor: cell.dataset.doctor
-    };
-    fillEditModal(c);
-  });
-});
-document.querySelectorAll('td.multiple').forEach(cell => {
-  cell.addEventListener('click', () => {
-    const citas = JSON.parse(cell.dataset.citas);
-    const list = document.getElementById('listaCitas');
-    list.innerHTML = '';
-    citas.forEach(c => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'list-group-item list-group-item-action';
-      btn.textContent = `${c.doctor} — ${c.motivo}`;
-      btn.addEventListener('click', () => {
-        if (!c.hora_original) {
-          c.hora_original = formatearHora(c.hora);
+  document.getElementById('modalFecha').setAttribute('min', new Date().toISOString().split('T')[0]);
+  const horarios = [
+    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM',
+    '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
+    '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM',
+    '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+    '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM'
+  ];
+  let fechaOriginalCita = '';
+  let horaOriginalCita = '';
+  function formatearHora(hora24h) {
+    const [horas, minutos] = hora24h.split(':');
+    let hora = parseInt(horas);
+    const periodo = hora >= 12 ? 'PM' : 'AM';
+    hora = hora % 12 || 12;
+    return `${hora.toString().padStart(2, '0')}:${minutos} ${periodo}`;
+  }
+  async function loadHorasModal(fecha, doctor, horaSel) {
+    const select = document.getElementById('modalHora');
+    select.innerHTML = '';
+    const res = await fetch(`/horas_ocupadas?fecha=${fecha}&doctor=${encodeURIComponent(doctor)}`);
+    const ocup = await res.json();
+    const ocupadas = ocup.map(hora => hora.replace(" (ocupado)", ""));
+    horarios.forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h;
+      opt.textContent = h;
+      const esMismaFechaOriginal = fecha === fechaOriginalCita;
+      const esHoraOriginal = h === horaOriginalCita;
+      if (ocupadas.includes(h)) {
+        if (esMismaFechaOriginal && esHoraOriginal) {
+          opt.style.color = '';
+          opt.disabled = false;
+        } else {
+          opt.style.color = '#dc3545';
+          opt.disabled = false;  // NO deshabilitar, solo mostrar en rojo
         }
-        const modal = bootstrap.Modal.getInstance(document.getElementById('selectorModal'));
-        modal.hide();
-        fillEditModal(c);
-      });
-      list.appendChild(btn);
-    });
-    new bootstrap.Modal(document.getElementById('selectorModal')).show();
-  });
-});
-
-
-
-
-
-// --------- MODAL DE NUEVA CITA desde SEMANA (mejorado para múltiples sedes) ---------
-document.querySelectorAll('td:not(.ocupada):not(.multiple)[data-fecha]').forEach(cell => {
-  cell.addEventListener('click', () => {
-    const fecha = cell.getAttribute('data-fecha');
-    const hora = cell.getAttribute('data-hora');
-    
-    document.getElementById("modal_fecha_input").value = fecha;
-    document.getElementById("modal_fecha_input").readOnly = true;
-    document.getElementById("modal_hora_select").innerHTML = `<option value="${hora}">${hora}</option>`;
-    document.getElementById("modal_hora_select").disabled = true;
-    document.getElementById("modal_hora_select").value = hora;
-    document.getElementById("modal_hora_hidden").value = hora;
-    
-    // Limpia otros campos
-    document.getElementById("modal_paciente_input").value = "";
-    document.getElementById("modal_celular_input").value = "";
-    document.getElementById("modal_motivo_select").value = "";
-    document.getElementById("modal_motivo_otro").value = "";
-    
-    // Seleccionar automáticamente la segunda opción del combo de doctores si existe
-    const selectDoctor = document.getElementById("modal_doctor_select");
-    if (selectDoctor.options.length > 1) {
-      selectDoctor.selectedIndex = 1;
-      
-      // Actualizar el campo oculto doctor_id
-      const selectedOption = selectDoctor.options[selectDoctor.selectedIndex];
-      if (selectedOption) {
-        document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
       }
+      if (esMismaFechaOriginal && esHoraOriginal) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+  }
+  function fillEditModal(c) {
+    document.getElementById('modalCitaId').value = c.id;
+    document.getElementById('modalFecha').value = c.fecha;
+    document.getElementById('modalPaciente').value = c.paciente;
+    document.getElementById('modalMotivo').value = c.motivo;
+    document.getElementById('modalCelular').value = c.celular;
+    document.getElementById('modalDoctor').value = c.doctor;
+    fechaOriginalCita = c.fecha;
+    horaOriginalCita = c.hora_original || formatearHora(c.hora);
+    loadHorasModal(c.fecha, c.doctor, horaOriginalCita).then(() => {
+      new bootstrap.Modal(document.getElementById('citaModal')).show();
+    });
+  }
+  document.getElementById('modalFecha').addEventListener('change', function () {
+    const fechaSeleccionada = this.value;
+    const doctor = document.getElementById('modalDoctor').value;
+    loadHorasModal(fechaSeleccionada, doctor, horaOriginalCita);
+  });
+
+  // Listener para recargar horas cuando se cambie el doctor
+  document.getElementById('modalDoctor').addEventListener('change', function () {
+    const fechaSeleccionada = document.getElementById('modalFecha').value;
+    const doctorSeleccionado = this.value;
+    loadHorasModal(fechaSeleccionada, doctorSeleccionado, horaOriginalCita);
+  });
+  document.querySelectorAll('td.ocupada').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const horaOriginal = cell.dataset.horaOriginal;
+      const c = {
+        id: cell.dataset.id,
+        fecha: cell.dataset.fecha,
+        hora: cell.dataset.hora,
+        hora_original: horaOriginal || formatearHora(cell.dataset.hora),
+        paciente: cell.dataset.paciente,
+        motivo: cell.dataset.motivo,
+        celular: cell.dataset.celular,
+        doctor: cell.dataset.doctor
+      };
+      fillEditModal(c);
+    });
+  });
+  document.querySelectorAll('td.multiple').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const citas = JSON.parse(cell.dataset.citas);
+      const list = document.getElementById('listaCitas');
+      list.innerHTML = '';
+      citas.forEach(c => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'list-group-item list-group-item-action';
+        btn.textContent = `${c.doctor} — ${c.motivo}`;
+        btn.addEventListener('click', () => {
+          if (!c.hora_original) {
+            c.hora_original = formatearHora(c.hora);
+          }
+          const modal = bootstrap.Modal.getInstance(document.getElementById('selectorModal'));
+          modal.hide();
+          fillEditModal(c);
+        });
+        list.appendChild(btn);
+      });
+      new bootstrap.Modal(document.getElementById('selectorModal')).show();
+    });
+  });
+
+
+
+
+
+  // --------- MODAL DE NUEVA CITA desde SEMANA (mejorado para múltiples sedes) ---------
+  document.querySelectorAll('td:not(.ocupada):not(.multiple)[data-fecha]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const fecha = cell.getAttribute('data-fecha');
+      const hora = cell.getAttribute('data-hora');
+
+      document.getElementById("modal_fecha_input").value = fecha;
+      document.getElementById("modal_fecha_input").readOnly = true;
+      document.getElementById("modal_hora_select").innerHTML = `<option value="${hora}">${hora}</option>`;
+      document.getElementById("modal_hora_select").disabled = true;
+      document.getElementById("modal_hora_select").value = hora;
+      document.getElementById("modal_hora_hidden").value = hora;
+
+      // Limpia otros campos
+      document.getElementById("modal_paciente_input").value = "";
+      document.getElementById("modal_celular_input").value = "";
+      document.getElementById("modal_motivo_select").value = "";
+      document.getElementById("modal_motivo_otro").value = "";
+
+      // Seleccionar automáticamente la segunda opción del combo de doctores si existe
+      const selectDoctor = document.getElementById("modal_doctor_select");
+      if (selectDoctor.options.length > 1) {
+        selectDoctor.selectedIndex = 1;
+
+        // Actualizar el campo oculto doctor_id
+        const selectedOption = selectDoctor.options[selectDoctor.selectedIndex];
+        if (selectedOption) {
+          document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
+        }
+      }
+
+      new bootstrap.Modal(document.getElementById('nuevoModalCita')).show();
+    });
+  });
+
+  // Actualizar doctor_id cuando se cambie el select de doctor
+  document.getElementById("modal_doctor_select").addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption) {
+      document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
+    }
+  });
+
+
+  // ----- Autocompletar en NUEVO MODAL -----
+  const modalPacienteInput = document.getElementById("modal_paciente_input");
+  const modalDatalistPacientes = document.getElementById("modal_pacientes");
+  const modalCelularInput = document.getElementById("modal_celular_input");
+  modalPacienteInput.addEventListener("input", async () => {
+    modalCelularInput.value = "";
+    const q = modalPacienteInput.value.trim();
+    modalDatalistPacientes.innerHTML = "";
+    if (!q) return;
+    const res = await fetch(`/autocomplete_paciente?q=${encodeURIComponent(q)}`);
+    const nombres = await res.json();
+    nombres.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      modalDatalistPacientes.appendChild(opt);
+    });
+  });
+  async function cargarTelefonoModal() {
+    const nombre = modalPacienteInput.value.trim();
+    if (!nombre) return;
+    const res = await fetch(`/telefono_paciente?nombre=${encodeURIComponent(nombre)}`);
+    const { telefono } = await res.json();
+    modalCelularInput.value = telefono || "";
+  }
+  modalPacienteInput.addEventListener("change", cargarTelefonoModal);
+  modalPacienteInput.addEventListener("blur", cargarTelefonoModal);
+  // ----- Motivo: mostrar campo Otro -----
+  const modalMotivoSelect = document.getElementById("modal_motivo_select");
+  const modalMotivoOtroContainer = document.getElementById("modal_motivo_otro_container");
+  modalMotivoSelect.addEventListener("change", function () {
+    if (modalMotivoSelect.value === "Otro") {
+      modalMotivoOtroContainer.classList.remove("d-none");
+      modalMotivoOtroContainer.classList.add("d-block");
+    } else {
+      modalMotivoOtroContainer.classList.remove("d-block");
+      modalMotivoOtroContainer.classList.add("d-none");
+    }
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    if (modalMotivoSelect.value === "Otro") {
+      modalMotivoOtroContainer.classList.remove("d-none");
+      modalMotivoOtroContainer.classList.add("d-block");
     }
 
-    new bootstrap.Modal(document.getElementById('nuevoModalCita')).show();
+    // Establecer el doctor_id inicial si hay un doctor seleccionado por defecto
+    const selectDoctor = document.getElementById("modal_doctor_select");
+    const selectedOption = selectDoctor.options[selectDoctor.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+      document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
+    }
   });
-});
-
-// Actualizar doctor_id cuando se cambie el select de doctor
-document.getElementById("modal_doctor_select").addEventListener("change", function() {
-  const selectedOption = this.options[this.selectedIndex];
-  if (selectedOption) {
-    document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
-  }
-});
-
-
-// ----- Autocompletar en NUEVO MODAL -----
-const modalPacienteInput = document.getElementById("modal_paciente_input");
-const modalDatalistPacientes = document.getElementById("modal_pacientes");
-const modalCelularInput = document.getElementById("modal_celular_input");
-modalPacienteInput.addEventListener("input", async () => {
-  modalCelularInput.value = "";
-  const q = modalPacienteInput.value.trim();
-  modalDatalistPacientes.innerHTML = "";
-  if (!q) return;
-  const res = await fetch(`/autocomplete_paciente?q=${encodeURIComponent(q)}`);
-  const nombres = await res.json();
-  nombres.forEach(n => {
-    const opt = document.createElement("option");
-    opt.value = n;
-    modalDatalistPacientes.appendChild(opt);
+  // ----- Validar celular (9 dígitos) -----
+  const modalForm = document.getElementById("formNuevaCita");
+  let sendingModal = false;
+  modalForm.addEventListener("submit", function (event) {
+    if (sendingModal) { event.preventDefault(); return; }
+    const celular = modalCelularInput.value.trim();
+    if (!/^\d{9}$/.test(celular)) {
+      event.preventDefault();
+      alert("Por favor, ingrese un número de celular válido (9 dígitos).");
+      modalCelularInput.focus();
+      return;
+    }
+    sendingModal = true;
+    const btn = document.getElementById("btnSubmitModalCita");
+    if (btn) btn.disabled = true;
   });
-});
-async function cargarTelefonoModal() {
-  const nombre = modalPacienteInput.value.trim();
-  if (!nombre) return;
-  const res = await fetch(`/telefono_paciente?nombre=${encodeURIComponent(nombre)}`);
-  const { telefono } = await res.json();
-  modalCelularInput.value = telefono || "";
-}
-modalPacienteInput.addEventListener("change", cargarTelefonoModal);
-modalPacienteInput.addEventListener("blur", cargarTelefonoModal);
-// ----- Motivo: mostrar campo Otro -----
-const modalMotivoSelect = document.getElementById("modal_motivo_select");
-const modalMotivoOtroContainer = document.getElementById("modal_motivo_otro_container");
-modalMotivoSelect.addEventListener("change", function() {
-  if (modalMotivoSelect.value === "Otro") {
-    modalMotivoOtroContainer.classList.remove("d-none");
-    modalMotivoOtroContainer.classList.add("d-block");
-  } else {
-    modalMotivoOtroContainer.classList.remove("d-block");
-    modalMotivoOtroContainer.classList.add("d-none");
-  }
-});
-document.addEventListener("DOMContentLoaded", function() {
-  if (modalMotivoSelect.value === "Otro") {
-    modalMotivoOtroContainer.classList.remove("d-none");
-    modalMotivoOtroContainer.classList.add("d-block");
-  }
-  
-  // Establecer el doctor_id inicial si hay un doctor seleccionado por defecto
-  const selectDoctor = document.getElementById("modal_doctor_select");
-  const selectedOption = selectDoctor.options[selectDoctor.selectedIndex];
-  if (selectedOption && selectedOption.value) {
-    document.getElementById("modal_doctor_id_hidden").value = selectedOption.getAttribute('data-doctor-id');
-  }
-});
-// ----- Validar celular (9 dígitos) -----
-const modalForm = document.getElementById("formNuevaCita");
-let sendingModal = false;
-modalForm.addEventListener("submit", function(event) {
-  if (sendingModal) { event.preventDefault(); return; }
-  const celular = modalCelularInput.value.trim();
-  if (!/^\d{9}$/.test(celular)) {
-    event.preventDefault();
-    alert("Por favor, ingrese un número de celular válido (9 dígitos).");
-    modalCelularInput.focus();
-    return;
-  }
-  sendingModal = true;
-  const btn = document.getElementById("btnSubmitModalCita");
-  if (btn) btn.disabled = true;
-});
 
 
 

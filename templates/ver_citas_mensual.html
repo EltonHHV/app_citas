@@ -1,191 +1,190 @@
 {% extends "layout.html" %}
 
 {% block content %}
-  {% set meses = {
-    'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo',
-    'April': 'Abril', 'May': 'Mayo', 'June': 'Junio',
-    'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre',
-    'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'
-  } %}
+{% set meses = {
+'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo',
+'April': 'Abril', 'May': 'Mayo', 'June': 'Junio',
+'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre',
+'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'
+} %}
 
-  <h2>Calendario del Mes {{ meses[start_of_month.strftime('%B')] }} {{ start_of_month.strftime('%Y') }}</h2>
+<h2>Calendario del Mes {{ meses[start_of_month.strftime('%B')] }} {{ start_of_month.strftime('%Y') }}</h2>
 
-  
-  {% if tiene_sedes %}
-    <div class="alert alert-info mb-3">
-      <i class="bi bi-info-circle"></i> Mostrando todas las citas
-    </div>
-  {% endif %}
-  
-  <form method="POST" class="mb-3">
-    <button type="submit" name="action" value="prev_month" class="btn btn-celeste">Mes Anterior</button>
-    <button type="submit" name="action" value="next_month" class="btn btn-celeste">Mes Siguiente</button>
-  </form>
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
+{% if tiene_sedes %}
+<div class="alert alert-info mb-3">
+  <i class="bi bi-info-circle"></i> Mostrando todas las citas
+</div>
+{% endif %}
 
-  <style>
-    /* Estilos mejorados para las citas con colores por profesional */
-    .cita {
-      border-radius: 4px;
-      margin-top: 5px;
-      padding: 5px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 2px solid transparent;
-    }
-    
-    .cita:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      filter: brightness(0.95);
-    }
-    
-    .cita-profesional {
-      font-size: 0.75em;
-      color: #333;
-      font-weight: 500;
-      display: block;
-      margin-top: 2px;
-    }
-  </style>
+<form method="POST" class="mb-3">
+  <button type="submit" name="action" value="prev_month" class="btn btn-celeste">Mes Anterior</button>
+  <button type="submit" name="action" value="next_month" class="btn btn-celeste">Mes Siguiente</button>
+</form>
 
-  <div class="calendar">
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Domingo</th>
-          <th>Lunes</th>
-          <th>Martes</th>
-          <th>Miércoles</th>
-          <th>Jueves</th>
-          <th>Viernes</th>
-          <th>Sábado</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for week in weeks %}
-          <tr>
-            {% for day in week %}
-              <td class="text-center" style="height: 150px; vertical-align: top;">
-                <div class="{% if day.date == today %}highlighted-day{% endif %}">
-                  {{ day.date.day if day.date else '' }}
-                </div>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
 
-                {% if day.date %}
-                  {% set fecha = day.date.strftime('%Y-%m-%d') %}
-                  {% set citas = ocupadas.get(fecha, []) %}
+<style>
+  /* Estilos mejorados para las citas con colores por profesional */
+  .cita {
+    border-radius: 4px;
+    margin-top: 5px;
+    padding: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
 
-                  {% for cita in citas %}
-                    {% set color_fondo = colores_doctores.get(cita.doctor, '#f1f1f1') if tiene_sedes else '#f1f1f1' %}
-                    <div class="cita"
-                         style="background-color: {{ color_fondo }};"
-                         data-id="{{ cita.id }}"
-                         data-paciente="{{ cita.paciente }}"
-                         data-motivo="{{ cita.motivo }}"
-                         data-celular="{{ cita.celular }}"
-                         data-doctor="{{ cita.doctor }}"
-                         data-fecha="{{ cita.fecha if cita.fecha is string else cita.fecha.strftime('%Y-%m-%d') }}"
-                         data-hora="{{ cita.hora }}"
-                         data-nacionalidad="{{ cita.nacionalidad }}"
-                         data-consultorio-nombre="{{ cita.consultorio_nombre }}"
-                         onclick="fillEditModal(this)">
-                      <strong>{{ cita.paciente }}</strong><br>
-                      {{ cita.hora }} - {{ cita.motivo }}
-                      {% if tiene_sedes %}
-                        <span class="cita-profesional">{{ cita.doctor }}</span>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
+  .cita:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    filter: brightness(0.95);
+  }
 
-                  {% if citas|length == 0 %}
-                    <div class="no-cita" style="text-align: center; color: gray;">No hay citas</div>
-                  {% endif %}
-                {% else %}
-                  <div></div>
-                {% endif %}
-              </td>
-            {% endfor %}
-          </tr>
+  .cita-profesional {
+    font-size: 0.75em;
+    color: #333;
+    font-weight: 500;
+    display: block;
+    margin-top: 2px;
+  }
+</style>
+
+<div class="calendar">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Domingo</th>
+        <th>Lunes</th>
+        <th>Martes</th>
+        <th>Miércoles</th>
+        <th>Jueves</th>
+        <th>Viernes</th>
+        <th>Sábado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in weeks %}
+      <tr>
+        {% for day in week %}
+        <td class="text-center" style="height: 150px; vertical-align: top;">
+          <div class="{% if day.date == today %}highlighted-day{% endif %}">
+            {{ day.date.day if day.date else '' }}
+          </div>
+
+          {% if day.date %}
+          {% set fecha = day.date.strftime('%Y-%m-%d') %}
+          {% set citas = ocupadas.get(fecha, []) %}
+
+          {% for cita in citas %}
+          {% set color_fondo = colores_doctores.get(cita.doctor, '#f1f1f1') if tiene_sedes else '#f1f1f1' %}
+          <div class="cita" style="background-color: {{ color_fondo }};" data-id="{{ cita.id }}"
+            data-paciente="{{ cita.paciente }}" data-motivo="{{ cita.motivo }}" data-celular="{{ cita.celular }}"
+            data-doctor="{{ cita.doctor }}"
+            data-fecha="{{ cita.fecha if cita.fecha is string else cita.fecha.strftime('%Y-%m-%d') }}"
+            data-hora="{{ cita.hora }}" data-nacionalidad="{{ cita.nacionalidad }}"
+            data-consultorio-nombre="{{ cita.consultorio_nombre }}" onclick="fillEditModal(this)">
+            <strong>{{ cita.paciente }}</strong><br>
+            {{ cita.hora }} - {{ cita.motivo }}
+            {% if tiene_sedes %}
+            <span class="cita-profesional">{{ cita.doctor }}</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+
+          {% if citas|length == 0 %}
+          <div class="no-cita" style="text-align: center; color: gray;">No hay citas</div>
+          {% endif %}
+          {% else %}
+          <div></div>
+          {% endif %}
+        </td>
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
-  <!-- Modal de Edición / Cancelación -->
-  <div class="modal fade" id="citaModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <form method="POST" id="formCita">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Reprogramar / Cancelar cita</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" name="id" id="modalCitaId">
-            <!-- ✅ NUEVO: Campo oculto para nacionalidad de la cita -->
-            <input type="hidden" id="modalNacionalidad">
-            <input type="hidden" id="modalConsultorioNombre">
-
-            <div class="mb-3">
-              <label for="modalPaciente" class="form-label">Paciente</label>
-              <input type="text" id="modalPaciente" class="form-control" readonly>
-            </div>
-            <div class="mb-3">
-              <label for="modalMotivo" class="form-label">Motivo</label>
-              <input type="text" id="modalMotivo" name="motivo" class="form-control">
-            </div>
-            <div class="mb-3 d-flex align-items-center">
-              <label for="modalCelular" class="form-label me-2">Celular</label>
-              <input type="text" id="modalCelular" name="celular" class="form-control me-2">
-              <!-- Botón personalizado -->
-              <button type="button" class="btn" id="whatsappBtnPersonalizado" onclick="openWhatsAppPersonalizado()">
-                <img src="{{ url_for('static', filename='recordatorio.png') }}" alt="WhatsApp" style="width: 50px; height: 50px;">
-              </button>
-            </div>
-            <div class="mb-3">
-              <label for="modalDoctor" class="form-label">
-                {% if consultorio_id in [12, 14] %}
-                  Sede
-                {% else %}
-                  Doctor
-                {% endif %}
-              </label>
-              <input type="text" id="modalDoctor" class="form-control" readonly>
-            </div>
-            <div class="mb-3">
-              <label for="modalFecha" class="form-label">Fecha</label>
-              <input type="date" name="fecha" id="modalFecha" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="modalHora" class="form-label">Hora</label>
-              <select name="hora" id="modalHora" class="form-select" required></select>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" onclick="eliminarxd()">Eliminar cita</button>
-            <button type="button" class="btn btn-primary" onclick="editarxd()">Guardar cambios</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal de confirmación -->
-  <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modal de Edición / Cancelación -->
+<div class="modal fade" id="citaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" id="formCita">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="confirmModalLabel">Cambio realizado</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">Reprogramar / Cancelar cita</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body" id="modalMessage"></div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="modalCitaId">
+          <!-- ✅ NUEVO: Campo oculto para nacionalidad de la cita -->
+          <input type="hidden" id="modalNacionalidad">
+          <input type="hidden" id="modalConsultorioNombre">
+
+          <div class="mb-3">
+            <label for="modalPaciente" class="form-label">Paciente</label>
+            <input type="text" id="modalPaciente" class="form-control" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="modalMotivo" class="form-label">Motivo</label>
+            <input type="text" id="modalMotivo" name="motivo" class="form-control">
+          </div>
+          <div class="mb-3 d-flex align-items-center">
+            <label for="modalCelular" class="form-label me-2">Celular</label>
+            <input type="text" id="modalCelular" name="celular" class="form-control me-2">
+            <!-- Botón personalizado -->
+            <button type="button" class="btn" id="whatsappBtnPersonalizado" onclick="openWhatsAppPersonalizado()">
+              <img src="{{ url_for('static', filename='recordatorio.png') }}" alt="WhatsApp"
+                style="width: 50px; height: 50px;">
+            </button>
+          </div>
+          <div class="mb-3">
+            <label for="modalDoctor" class="form-label">
+              {% if consultorio_id in [12, 14] %}
+              Sede
+              {% else %}
+              Doctor
+              {% endif %}
+            </label>
+            <select id="modalDoctor" name="doctor" class="form-select" required>
+              {% for d in doctores_select %}
+              <option value="{{ d['doctores'] }}">{{ d['doctores'] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="modalFecha" class="form-label">Fecha</label>
+            <input type="date" name="fecha" id="modalFecha" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="modalHora" class="form-label">Hora</label>
+            <select name="hora" id="modalHora" class="form-select" required></select>
+          </div>
+        </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="reloadPage()">OK</button>
+          <button type="button" class="btn btn-danger" onclick="eliminarxd()">Eliminar cita</button>
+          <button type="button" class="btn btn-primary" onclick="editarxd()">Guardar cambios</button>
         </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmModalLabel">Cambio realizado</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalMessage"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="reloadPage()">OK</button>
       </div>
     </div>
   </div>
+</div>
 
 <script>
   // ============================================================
@@ -217,12 +216,12 @@
   function getConfig() {
     const nacionalidad = document.getElementById("modalNacionalidad").value;
     const config = PAIS_CONFIG[nacionalidad];
-    
+
     if (!config) {
       console.warn(`Nacionalidad "${nacionalidad}" no configurada. Usando Perú por defecto.`);
       return PAIS_CONFIG['Peru'];
     }
-    
+
     return config;
   }
 
@@ -232,7 +231,7 @@
   function formatPhoneNumber(num) {
     const config = getConfig();  // ← Obtiene config dinámicamente
     num = num.replace(/[^\d]/g, '');
-    
+
     // Si el número ya tiene el código de país
     if (num.startsWith(config.codigo)) {
       const longitudEsperada = config.codigo.length + config.digitos;
@@ -241,12 +240,12 @@
       }
       return false;
     }
-    
+
     // Si solo tiene los dígitos locales
     if (num.length === config.digitos) {
       return config.codigo + num;
     }
-    
+
     return false;
   }
 
@@ -255,7 +254,7 @@
    */
   function openWhatsAppPersonalizado() {
     const config = getConfig();
-    
+
     // Obtener los datos directamente del modal
     var paciente = document.getElementById("modalPaciente").value;  // Nombre del paciente
     var motivo = document.getElementById("modalMotivo").value;  // Motivo de la cita
@@ -265,12 +264,12 @@
 
     // Verificamos que el celular sea válido
     var numero = formatPhoneNumber(celular);
-    
+
     if (!numero) {
       alert(`Ingrese un número válido de ${config.nombre} (${config.digitos} dígitos, ejemplo: ${config.placeholder})`);
       return;
     }
-    
+
     // Verificamos que la fecha y hora sean válidas
     if (!(fechaCita && horaCita)) {
       alert("Por favor, complete todos los campos de la cita.");
@@ -342,166 +341,175 @@
 
 
 
-  <!-- Script para cargar horas disponibles -->
-  <script>
-    // Configuración de horarios disponibles
-    const horarios = [
-      '08:00 AM','08:30 AM','09:00 AM','09:30 AM','10:00 AM',
-      '10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM',
-      '01:00 PM','01:30 PM','02:00 PM','02:30 PM','03:00 PM',
-      '03:30 PM','04:00 PM','04:30 PM','05:00 PM','05:30 PM',
-      '06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM'
-    ];
+<!-- Script para cargar horas disponibles -->
+<script>
+  // Configuración de horarios disponibles
+  const horarios = [
+    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM',
+    '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
+    '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM',
+    '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+    '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM'
+  ];
 
-    // Variable global para saber si se manejan múltiples profesionales
-    var tieneSedes = {{ tiene_sedes | tojson }};
-  
-    console.log(tieneSedes);  
+  // Variable global para saber si se manejan múltiples profesionales
+  var tieneSedes = {{ tiene_sedes | tojson }};
 
-    let fechaOriginalCita = '';
-    let horaOriginalCita = '';
+  console.log(tieneSedes);
 
-    async function loadHorasModal(fecha, doctor, horaSel) {
-      const select = document.getElementById('modalHora');
-      select.innerHTML = '';
-      const res = await fetch(`/horas_ocupadas?fecha=${fecha}&doctor=${encodeURIComponent(doctor)}`);
-      const ocup = await res.json();
-      const ocupadas = ocup.map(hora => hora.replace(" (ocupado)", ""));
+  let fechaOriginalCita = '';
+  let horaOriginalCita = '';
 
-      horarios.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h;
-        opt.textContent = h;
+  async function loadHorasModal(fecha, doctor, horaSel) {
+    const select = document.getElementById('modalHora');
+    select.innerHTML = '';
+    const res = await fetch(`/horas_ocupadas?fecha=${fecha}&doctor=${encodeURIComponent(doctor)}`);
+    const ocup = await res.json();
+    const ocupadas = ocup.map(hora => hora.replace(" (ocupado)", ""));
 
-        // Si la hora está ocupada
-        if (ocupadas.includes(h) && h !== horaSel) {
-          opt.style.color = '#dc3545'; // Color rojo para las horas ocupadas
-          
-          // Solo deshabilitar si NO tiene múltiples profesionales
-          if (!tieneSedes) {
-            opt.disabled = true;
-          }
+    horarios.forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h;
+      opt.textContent = h;
+
+      // Si la hora está ocupada
+      if (ocupadas.includes(h) && h !== horaSel) {
+        opt.style.color = '#dc3545'; // Color rojo para las horas ocupadas
+
+        // Solo deshabilitar si NO tiene múltiples profesionales
+        if (!tieneSedes) {
+          opt.disabled = true;
         }
+      }
 
-        // Si es la misma hora que la cita actual, seleccionarla
-        if (h === horaSel) {
-          opt.selected = true;
-        }
+      // Si es la misma hora que la cita actual, seleccionarla
+      if (h === horaSel) {
+        opt.selected = true;
+      }
 
-        select.appendChild(opt);
-      });
-    }
+      select.appendChild(opt);
+    });
+  }
 
-    /**
-     * ✅ MODIFICADO: Función para cargar datos de la cita en el modal
-     * Ahora incluye nacionalidad y consultorio
-     */
-    function fillEditModal(citaElement) {
-      const id = citaElement.getAttribute('data-id');
-      const paciente = citaElement.getAttribute('data-paciente');
-      const motivo = citaElement.getAttribute('data-motivo');
-      const celular = citaElement.getAttribute('data-celular');
-      const doctor = citaElement.getAttribute('data-doctor');
-      const fecha = citaElement.getAttribute('data-fecha');
-      const hora = citaElement.getAttribute('data-hora');
-      
-      // ✅ NUEVO: Obtener nacionalidad y consultorio
-      const nacionalidad = citaElement.getAttribute('data-nacionalidad') || 'Peru';
-      const consultorioNombre = citaElement.getAttribute('data-consultorio-nombre') || '{{ consultorio }}';
+  /**
+   * ✅ MODIFICADO: Función para cargar datos de la cita en el modal
+   * Ahora incluye nacionalidad y consultorio
+   */
+  function fillEditModal(citaElement) {
+    const id = citaElement.getAttribute('data-id');
+    const paciente = citaElement.getAttribute('data-paciente');
+    const motivo = citaElement.getAttribute('data-motivo');
+    const celular = citaElement.getAttribute('data-celular');
+    const doctor = citaElement.getAttribute('data-doctor');
+    const fecha = citaElement.getAttribute('data-fecha');
+    const hora = citaElement.getAttribute('data-hora');
 
-      document.getElementById('modalCitaId').value = id;
-      document.getElementById('modalPaciente').value = paciente;
-      document.getElementById('modalMotivo').value = motivo;
-      document.getElementById('modalCelular').value = celular;
-      document.getElementById('modalDoctor').value = doctor;
-      document.getElementById('modalFecha').value = fecha;
-      document.getElementById('modalHora').value = hora;
-      
-      // ✅ CRÍTICO: Guardar nacionalidad y consultorio de la cita
-      document.getElementById('modalNacionalidad').value = nacionalidad;
-      document.getElementById('modalConsultorioNombre').value = consultorioNombre;
-      
-      // Log para debugging
-      console.log('Cita cargada:', {
-        id: id,
-        paciente: paciente,
-        nacionalidad: nacionalidad,
-        consultorio: consultorioNombre
-      });
+    // ✅ NUEVO: Obtener nacionalidad y consultorio
+    const nacionalidad = citaElement.getAttribute('data-nacionalidad') || 'Peru';
+    const consultorioNombre = citaElement.getAttribute('data-consultorio-nombre') || '{{ consultorio }}';
 
-      loadHorasModal(fecha, doctor, hora);
+    document.getElementById('modalCitaId').value = id;
+    document.getElementById('modalPaciente').value = paciente;
+    document.getElementById('modalMotivo').value = motivo;
+    document.getElementById('modalCelular').value = celular;
+    document.getElementById('modalDoctor').value = doctor;
+    document.getElementById('modalFecha').value = fecha;
+    document.getElementById('modalHora').value = hora;
 
-      new bootstrap.Modal(document.getElementById('citaModal')).show();
-    }
+    // ✅ CRÍTICO: Guardar nacionalidad y consultorio de la cita
+    document.getElementById('modalNacionalidad').value = nacionalidad;
+    document.getElementById('modalConsultorioNombre').value = consultorioNombre;
 
-    // Cargar las horas disponibles cuando la fecha cambie
-    document.getElementById('modalFecha').addEventListener('change', function() {
-      const fechaSeleccionada = this.value;
-      const doctor = document.getElementById('modalDoctor').value;
-      loadHorasModal(fechaSeleccionada, doctor, horaOriginalCita);
+    // Log para debugging
+    console.log('Cita cargada:', {
+      id: id,
+      paciente: paciente,
+      nacionalidad: nacionalidad,
+      consultorio: consultorioNombre
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
-      // Establecer la fecha mínima como el día de hoy
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('modalFecha').setAttribute('min', today);
-    });
+    loadHorasModal(fecha, doctor, hora);
+
+    new bootstrap.Modal(document.getElementById('citaModal')).show();
+  }
+
+  // Cargar las horas disponibles cuando la fecha cambie
+  document.getElementById('modalFecha').addEventListener('change', function () {
+    const fechaSeleccionada = this.value;
+    const doctor = document.getElementById('modalDoctor').value;
+    loadHorasModal(fechaSeleccionada, doctor, horaOriginalCita);
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Establecer la fecha mínima como el día de hoy
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('modalFecha').setAttribute('min', today);
+  });
 
 
-    // Función para mostrar el modal de confirmación
-    function showConfirmationMessage(message) {
-      document.getElementById('modalMessage').textContent = message;
-      new bootstrap.Modal(document.getElementById('confirmModal')).show();
-    }
+  // Función para mostrar el modal de confirmación
+  function showConfirmationMessage(message) {
+    document.getElementById('modalMessage').textContent = message;
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+  }
 
-    // Función para recargar la página después de la confirmación
-    function reloadPage() {
-      location.reload();
-    }
+  // Función para recargar la página después de la confirmación
+  function reloadPage() {
+    location.reload();
+  }
 
-    // Funciones de edición y eliminación usando AJAX
-    function eliminarxd() {
-      const citaId = document.getElementById('modalCitaId').value;
-      const formData = new FormData();
-      formData.append('id', citaId);
+  // Funciones de edición y eliminación usando AJAX
+  function eliminarxd() {
+    const citaId = document.getElementById('modalCitaId').value;
+    const formData = new FormData();
+    formData.append('id', citaId);
 
-      fetch('/eliminarxd', {
-        method: 'POST',
-        body: formData
-      })
+    fetch('/eliminarxd', {
+      method: 'POST',
+      body: formData
+    })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
           showConfirmationMessage(data.message);
         }
       });
-    }
+  }
 
-    function editarxd() {
-      const citaId = document.getElementById('modalCitaId').value;
-      const nuevaFecha = document.getElementById('modalFecha').value;
-      const nuevaHora = document.getElementById('modalHora').value;
-      const nuevoMotivo = document.getElementById('modalMotivo').value;
-      const nuevoCelular = document.getElementById('modalCelular').value;
+  function editarxd() {
+    const citaId = document.getElementById('modalCitaId').value;
+    const nuevaFecha = document.getElementById('modalFecha').value;
+    const nuevaHora = document.getElementById('modalHora').value;
+    const nuevoMotivo = document.getElementById('modalMotivo').value;
+    const nuevoCelular = document.getElementById('modalCelular').value;
+    const nuevoDoctor = document.getElementById('modalDoctor').value;  // Nuevo: obtener el doctor seleccionado
 
-      const formData = new FormData();
-      formData.append('id', citaId);
-      formData.append('fecha', nuevaFecha);
-      formData.append('hora', nuevaHora);
-      formData.append('motivo', nuevoMotivo);
-      formData.append('celular', nuevoCelular);
+    const formData = new FormData();
+    formData.append('id', citaId);
+    formData.append('fecha', nuevaFecha);
+    formData.append('hora', nuevaHora);
+    formData.append('motivo', nuevoMotivo);
+    formData.append('celular', nuevoCelular);
+    formData.append('doctor', nuevoDoctor);  // Nuevo: enviar el doctor seleccionado
 
-      fetch('/editarxd', {
-        method: 'POST',
-        body: formData
-      })
+    fetch('/editarxd', {
+      method: 'POST',
+      body: formData
+    })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
           showConfirmationMessage(data.message);
         }
       });
-    }
-  </script>
+  }
+
+  // Listener para recargar horas cuando se cambie el doctor
+  document.getElementById('modalDoctor').addEventListener('change', function () {
+    const fechaSeleccionada = document.getElementById('modalFecha').value;
+    const doctorSeleccionado = this.value;
+    loadHorasModal(fechaSeleccionada, doctorSeleccionado, horaOriginalCita);
+  });
+</script>
 
 {% endblock %}

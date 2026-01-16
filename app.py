@@ -471,10 +471,10 @@ def editar_cita():
     nueva_fecha = request.form['fecha']
     nueva_hora  = request.form['hora']
     
-    # Obtener campos editables (Motivo y Celular)
-    # Usamos .get() por seguridad, aunque los campos serán obligatorios
+    # Obtener campos editables (Motivo, Celular y Doctor)
     nuevo_motivo = request.form.get('motivo')
-    nuevo_celular = request.form.get('celular') 
+    nuevo_celular = request.form.get('celular')
+    nuevo_doctor = request.form.get('doctor')  # Nuevo: obtener el doctor seleccionado
 
     conn = get_db_connection()
     
@@ -482,10 +482,13 @@ def editar_cita():
     datos_a_actualizar = {
         'Fecha': nueva_fecha,
         'Hora': nueva_hora,
-        # Incluimos los nuevos campos editables
         'Motivo': nuevo_motivo,
         'Celular': nuevo_celular
     }
+    
+    # Solo agregar Doctor si se envió un valor
+    if nuevo_doctor:
+        datos_a_actualizar['Doctor'] = nuevo_doctor
     
     conn.table('citas').update(datos_a_actualizar).eq('id', id_cita).execute()
     
@@ -513,9 +516,10 @@ def editarxd():
     nueva_fecha = request.form['fecha']
     nueva_hora  = request.form['hora']
     
-    # Obtener nuevos campos editables
+    # Obtener campos editables
     nuevo_motivo = request.form.get('motivo')
     nuevo_celular = request.form.get('celular')
+    nuevo_doctor = request.form.get('doctor')  # Nuevo: obtener el doctor seleccionado
     
     conn = get_db_connection()
     
@@ -523,10 +527,13 @@ def editarxd():
     datos_a_actualizar = {
         'Fecha': nueva_fecha,
         'Hora': nueva_hora,
-        # Incluimos las columnas de tu BD: "Motivo" y "Celular"
         'Motivo': nuevo_motivo,
         'Celular': nuevo_celular
     }
+    
+    # Solo agregar Doctor si se envió un valor
+    if nuevo_doctor:
+        datos_a_actualizar['Doctor'] = nuevo_doctor
     
     conn.table('citas').update(datos_a_actualizar).eq('id', id_cita).execute()
     
@@ -611,9 +618,18 @@ def ver_citas_mensual():
             d['doctores']: COLORES_HEX.get(d['color'], '#95A5A6') 
             for d in doctores_del_consultorio
         }
+        # Obtener doctores para el select del modal de edición
+        doctores_select = conn.table('doctores').select('id, doctores, consultorio_id, sedes')\
+            .eq('consultorio_id', consultorio_id)\
+            .eq('sedes', 'SI')\
+            .execute().data
     else:
         nombres_doctores = [doctor_name]
         colores_doctores = {}
+        # Si no tiene sedes, solo mostrar el doctor actual
+        doctores_select = conn.table('doctores').select('id, doctores, consultorio_id, sedes')\
+            .eq('id', doctor_id)\
+            .execute().data
 
     hoy = date.today()
 
@@ -747,6 +763,7 @@ def ver_citas_mensual():
         consultorio_id=consultorio_id,  # Pasamos el consultorio_id
         tiene_sedes=tiene_sedes,
         colores_doctores=colores_doctores,
+        doctores_select=doctores_select,  # Lista de doctores para el select del modal
     )
 
 
