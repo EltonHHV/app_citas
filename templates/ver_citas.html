@@ -8,10 +8,25 @@
 'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'
 } %}
 
-<h2>Calendario del Mes {{ meses[start_of_week.strftime('%B')] }}</h2>
+{% set total_citas_semana = namespace(count=0) %}
+{% for key, lista_citas in ocupadas.items() %}
+  {% set total_citas_semana.count = total_citas_semana.count + lista_citas|length %}
+{% endfor %}
 
-<form method="POST" class="mb-3">
+<div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+  <h2 class="mb-0">Calendario del Mes {{ meses[start_of_week.strftime('%B')] }}</h2>
+  <span class="badge rounded-pill bg-primary d-inline-flex align-items-center gap-1" style="font-size: 0.95rem; padding: 0.45em 0.9em;">
+    <i class="bi bi-calendar-check"></i>
+    {{ total_citas_semana.count }} {{ 'cita' if total_citas_semana.count == 1 else 'citas' }}
+  </span>
+</div>
+
+<form method="POST" class="mb-3 d-flex align-items-center gap-2">
+  <input type="hidden" name="visible_week" value="{{ start_of_week.strftime('%Y-%m-%d') }}">
   <button type="submit" name="action" value="prev" class="btn btn-celeste">Semana Anterior</button>
+  <button type="submit" name="action" value="current_week" class="btn btn-outline-primary">
+    <i class="bi bi-calendar-event"></i> Hoy
+  </button>
   <button type="submit" name="action" value="next" class="btn btn-celeste">Semana Siguiente</button>
 </form>
 

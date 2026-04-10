@@ -149,29 +149,38 @@ def ver_citas():
 
     hoy = date.today()
 
-    if 'start_of_week' not in session:
-        start_of_week = hoy - timedelta(days=hoy.weekday())  # Lunes de esta semana
-        end_of_week = start_of_week + timedelta(days=6)     # Domingo de esta semana
-    else:
-        start_of_week = session['start_of_week']
-        end_of_week = session['end_of_week']
-
-    if isinstance(start_of_week, str):
-        start_of_week = datetime.strptime(start_of_week, "%a, %d %b %Y %H:%M:%S GMT").date()
-    if isinstance(end_of_week, str):
-        end_of_week = datetime.strptime(end_of_week, "%a, %d %b %Y %H:%M:%S GMT").date()
-
     if request.method == "POST":
         action = request.form.get("action")
-        if action == "next":  
-            start_of_week += timedelta(weeks=1)
-            end_of_week += timedelta(weeks=1)
-        elif action == "prev": 
-            start_of_week -= timedelta(weeks=1)
-            end_of_week -= timedelta(weeks=1)
 
-    session['start_of_week'] = start_of_week
-    session['end_of_week'] = end_of_week
+        # Acción "current_week": forzar reinicio a la semana actual
+        if action == "current_week":
+            start_of_week = hoy - timedelta(days=hoy.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+        else:
+            # Leer la semana vigente desde el campo oculto del formulario
+            visible_week_str = request.form.get("visible_week", "")
+            if visible_week_str:
+                try:
+                    start_of_week = datetime.strptime(visible_week_str, '%Y-%m-%d').date()
+                    end_of_week = start_of_week + timedelta(days=6)
+                except ValueError:
+                    start_of_week = hoy - timedelta(days=hoy.weekday())
+                    end_of_week = start_of_week + timedelta(days=6)
+            else:
+                start_of_week = hoy - timedelta(days=hoy.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+
+            # Navegar a la semana siguiente o anterior
+            if action == "next":
+                start_of_week += timedelta(weeks=1)
+                end_of_week += timedelta(weeks=1)
+            elif action == "prev":
+                start_of_week -= timedelta(weeks=1)
+                end_of_week -= timedelta(weeks=1)
+    else:
+        # GET: siempre reiniciar a la semana actual
+        start_of_week = hoy - timedelta(days=hoy.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
 
     # Obtener citas según si tiene múltiples sedes o no
     if tiene_sedes:
@@ -634,30 +643,37 @@ def ver_citas_mensual():
 
     hoy = date.today()
 
-    if 'start_of_month' not in session:
-        start_of_month = hoy.replace(day=1)
-    else:
-        start_of_month_str = session['start_of_month']
-        if isinstance(start_of_month_str, str):
-            start_of_month = datetime.strptime(start_of_month_str, '%a, %d %b %Y %H:%M:%S GMT').date()
-        else:
-            start_of_month = start_of_month_str
-
-    # Lógica para el mes siguiente o anterior
     if request.method == "POST":
         action = request.form.get("action")
-        if action == "next_month":
-            if start_of_month.month == 12:
-                start_of_month = start_of_month.replace(year=start_of_month.year + 1, month=1, day=1)
-            else:
-                start_of_month = start_of_month.replace(month=start_of_month.month + 1, day=1)
-        elif action == "prev_month":
-            if start_of_month.month == 1:
-                start_of_month = start_of_month.replace(year=start_of_month.year - 1, month=12, day=1)
-            else:
-                start_of_month = start_of_month.replace(month=start_of_month.month - 1, day=1)
 
-    session['start_of_month'] = start_of_month
+        # Acción "current_month": forzar reinicio al mes actual
+        if action == "current_month":
+            start_of_month = hoy.replace(day=1)
+        else:
+            # Leer el mes vigente desde el campo oculto del formulario
+            visible_month_str = request.form.get("visible_month", "")
+            if visible_month_str:
+                try:
+                    start_of_month = datetime.strptime(visible_month_str, '%Y-%m-%d').date()
+                except ValueError:
+                    start_of_month = hoy.replace(day=1)
+            else:
+                start_of_month = hoy.replace(day=1)
+
+            # Navegar al mes siguiente o anterior
+            if action == "next_month":
+                if start_of_month.month == 12:
+                    start_of_month = start_of_month.replace(year=start_of_month.year + 1, month=1, day=1)
+                else:
+                    start_of_month = start_of_month.replace(month=start_of_month.month + 1, day=1)
+            elif action == "prev_month":
+                if start_of_month.month == 1:
+                    start_of_month = start_of_month.replace(year=start_of_month.year - 1, month=12, day=1)
+                else:
+                    start_of_month = start_of_month.replace(month=start_of_month.month - 1, day=1)
+    else:
+        # GET: siempre reiniciar al mes actual
+        start_of_month = hoy.replace(day=1)
 
     # Obtener citas para este mes
     last_day_of_month = calendar.monthrange(start_of_month.year, start_of_month.month)[1]
