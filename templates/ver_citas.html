@@ -235,13 +235,13 @@
 
 
 <!-- Modal para agendar nueva cita -->
-<div class="modal fade" id="nuevoModalCita" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="nuevoModalCita" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog">
     <form method="POST" id="formNuevaCita" action="{{ url_for('nueva_cita') }}" autocomplete="off">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Agendar Nueva Cita</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold">Agendar Nueva Cita</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="background-color: #ffaaaa; opacity: 1; border: 2px solid #cc0000; border-radius: 50%; padding: 0.6rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Cerrar modal"></button>
         </div>
         <div class="modal-body">
           <div class="mb-4">
