@@ -47,7 +47,7 @@ CONSULTORIOS = {
     16: "del CENTRO ESTÉTICO MELIDERMA❤️",
     24: "del CENTRO ESTÉTICO DRA. ELVIANYS TORO❤️",
     25: "del CENTRO ESTÉTICO DRA. ELVIANYS TORO❤️",
-
+    26: "del Centro Médico Estético Meliderma ❤️",
 }
 
 
