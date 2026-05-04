@@ -3,59 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema de Citas</title>
-    <!-- Cargar Bootstrap desde CDN -->
+    <title>Iniciar sesión · MediCitas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --brand-700: #0b6b6b;
+            --brand-600: #0d8a8a;
+            --brand-500: #14a8a8;
+            --brand-50:  #e6f6f6;
+            --ink-900: #0f172a;
+            --ink-600: #475569;
+            --ink-400: #94a3b8;
+            --line:    #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
         body {
-            background-color: #f8f9fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--ink-900);
+            background: #f4f7fa;
+            -webkit-font-smoothing: antialiased;
         }
-        .login-container {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-            background-color: white;
+
+        .auth-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 992px) {
+            .auth-shell { grid-template-columns: 1.1fr 1fr; }
+        }
+
+        /* ---------- Panel izquierdo (branding) ---------- */
+        .auth-hero {
+            display: none;
+            position: relative;
+            color: #fff;
+            padding: 56px 64px;
+            background:
+                radial-gradient(1200px 600px at -10% -20%, rgba(255,255,255,.18), transparent 60%),
+                radial-gradient(900px 500px at 110% 110%, rgba(255,255,255,.10), transparent 55%),
+                linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 100%);
+            overflow: hidden;
+        }
+
+        @media (min-width: 992px) {
+            .auth-hero { display: flex; flex-direction: column; justify-content: space-between; }
+        }
+
+        .auth-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: radial-gradient(ellipse at center, #000 40%, transparent 75%);
+            pointer-events: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: .2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-mark {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: grid; place-items: center;
+            background: rgba(255,255,255,.15);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,.25);
+        }
+
+        .hero-copy { position: relative; z-index: 1; max-width: 480px; }
+        .hero-copy h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin: 0 0 14px;
+        }
+        .hero-copy p {
+            color: rgba(255,255,255,.85);
+            font-size: 1.02rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .hero-features {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 14px;
+            margin-top: 28px;
+        }
+        .hero-feat {
+            display: flex; align-items: center; gap: 12px;
+            font-size: .95rem;
+            color: rgba(255,255,255,.92);
+        }
+        .hero-feat i {
+            width: 32px; height: 32px;
+            display: grid; place-items: center;
             border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.18);
+            font-size: .95rem;
         }
-        h2 {
+
+        .hero-foot {
+            position: relative;
+            z-index: 1;
+            font-size: .82rem;
+            color: rgba(255,255,255,.7);
+        }
+
+        /* ---------- Panel derecho (formulario) ---------- */
+        .auth-form-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .mobile-brand {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-bottom: 24px;
+            font-weight: 700; color: var(--brand-700);
+        }
+        .mobile-brand .brand-mark {
+            background: var(--brand-50);
+            border: 1px solid #cdebeb;
+            color: var(--brand-700);
+        }
+        @media (min-width: 992px) { .mobile-brand { display: none; } }
+
+        .auth-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: var(--ink-900);
+        }
+        .auth-sub {
+            color: var(--ink-600);
+            font-size: .95rem;
+            margin: 0 0 28px;
+        }
+
+        .form-label {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 6px;
+        }
+
+        .input-group-pro {
+            position: relative;
+        }
+        .input-group-pro .form-control {
+            height: 48px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            padding-left: 42px;
+            font-size: .95rem;
+            background: #fff;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .input-group-pro .form-control:focus {
+            border-color: var(--brand-500);
+            box-shadow: 0 0 0 4px rgba(20,168,168,.15);
+            outline: none;
+        }
+        .input-group-pro .field-icon {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-400);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+        .input-group-pro .toggle-eye {
+            position: absolute;
+            right: 10px; top: 50%;
+            transform: translateY(-50%);
+            border: 0; background: transparent;
+            color: var(--ink-400);
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: grid; place-items: center;
+            cursor: pointer;
+        }
+        .input-group-pro .toggle-eye:hover { color: var(--brand-600); background: var(--brand-50); }
+
+        .form-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 4px 0 22px;
+            font-size: .88rem;
+        }
+        .form-check-label { color: var(--ink-600); }
+        .form-check-input:checked {
+            background-color: var(--brand-600);
+            border-color: var(--brand-600);
+        }
+        .form-row a {
+            color: var(--brand-600);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .form-row a:hover { text-decoration: underline; }
+
+        .btn-brand {
+            width: 100%;
+            height: 48px;
+            border-radius: 10px;
+            border: 0;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: .2px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--brand-600), var(--brand-500));
+            box-shadow: 0 8px 18px -8px rgba(13,138,138,.55);
+            transition: transform .08s ease, box-shadow .15s, filter .15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-brand:hover { filter: brightness(1.04); box-shadow: 0 12px 24px -10px rgba(13,138,138,.65); }
+        .btn-brand:active { transform: translateY(1px); }
+
+        .auth-foot {
             text-align: center;
-            margin-bottom: 20px;
+            margin-top: 22px;
+            font-size: .88rem;
+            color: var(--ink-600);
+        }
+        .auth-foot a {
+            color: var(--brand-600);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .auth-foot a:hover { text-decoration: underline; }
+
+        .alert {
+            border: 0;
+            border-radius: 10px;
+            font-size: .9rem;
+            padding: 12px 14px;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .alert-danger  { background: #fdecec; color: #8a1f1f; }
+        .alert-success { background: #e7f6ee; color: #15623a; }
+        .alert-warning { background: #fff5e0; color: #8a5a05; }
+        .alert-info,
+        .alert-message { background: var(--brand-50); color: var(--brand-700); }
+
+        .legal {
+            margin-top: 28px;
+            text-align: center;
+            font-size: .78rem;
+            color: var(--ink-400);
         }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <h2>Iniciar sesión</h2>
+<div class="auth-shell">
 
-        <!-- Mostrar los mensajes flash, si los hay -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
+    <!-- Panel de marca -->
+    <aside class="auth-hero">
+        <div class="brand">
+            <div class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></div>
+            <span>MediCitas</span>
+        </div>
+
+        <div class="hero-copy">
+            <h1>Cuidado de tus pacientes, sin complicaciones.</h1>
+            <p>Gestiona agendas, historias clínicas y citas desde un único panel diseñado para profesionales de la salud.</p>
+
+            <div class="hero-features">
+                <div class="hero-feat"><i class="bi bi-calendar2-check"></i> Agenda en tiempo real y recordatorios automáticos.</div>
+                <div class="hero-feat"><i class="bi bi-shield-lock"></i> Datos protegidos con cifrado de extremo a extremo.</div>
+                <div class="hero-feat"><i class="bi bi-clipboard2-pulse"></i> Historias clínicas accesibles desde cualquier dispositivo.</div>
+            </div>
+        </div>
+
+        <div class="hero-foot">
+            © {{ 2026 }} MediCitas · Plataforma para profesionales médicos
+        </div>
+    </aside>
+
+    <!-- Formulario -->
+    <main class="auth-form-wrap">
+        <div class="auth-card">
+
+            <div class="mobile-brand">
+                <div class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></div>
+                <span>MediCitas</span>
+            </div>
+
+            <h2 class="auth-title">Bienvenido de nuevo</h2>
+            <p class="auth-sub">Ingresa tus credenciales para acceder a tu panel médico.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'danger' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+                            <div>{{ message }}</div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST" novalidate>
+                <div class="mb-3">
+                    <label for="doctor_id" class="form-label">ID del Doctor</label>
+                    <div class="input-group-pro">
+                        <i class="bi bi-person-badge field-icon"></i>
+                        <input type="text" class="form-control" name="doctor_id" id="doctor_id"
+                               placeholder="Ej. DR-00123" autocomplete="username" required>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                </div>
 
-        <form action="{{ url_for('login') }}" method="POST">
-            <div class="mb-3">
-                <label for="doctor_id" class="form-label">ID del Doctor:</label>
-                <input type="text" class="form-control" name="doctor_id" id="doctor_id" required>
-            </div>
+                <div class="mb-2">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="input-group-pro">
+                        <i class="bi bi-lock field-icon"></i>
+                        <input type="password" class="form-control" name="password" id="password"
+                               placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+                        <button type="button" class="toggle-eye" aria-label="Mostrar contraseña" onclick="togglePass()">
+                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Contraseña:</label>
-                <input type="password" class="form-control" name="password" id="password" required>
-            </div>
+                <div class="form-row">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember">
+                        <label class="form-check-label" for="remember">Recuérdame</label>
+                    </div>
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                </div>
 
-            <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
-        </form>
-    </div>
+                <button type="submit" class="btn-brand">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    Iniciar sesión
+                </button>
+            </form>
 
-    <!-- Scripts de Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <p class="auth-foot">
+                ¿Aún no tienes cuenta? <a href="#">Solicita tu acceso</a>
+            </p>
+
+            <p class="legal">
+                Al continuar aceptas los <a href="#" class="text-muted">Términos</a> y la
+                <a href="#" class="text-muted">Política de privacidad</a>.
+            </p>
+        </div>
+    </main>
+</div>
+
+<script>
+    function togglePass() {
+        const input = document.getElementById('password');
+        const icon  = document.getElementById('eyeIcon');
+        const isPwd = input.type === 'password';
+        input.type  = isPwd ? 'text' : 'password';
+        icon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
