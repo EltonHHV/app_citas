@@ -38,18 +38,59 @@
   </form>
 
   <!-- Buscador de citas -->
-  <div class="position-relative ms-auto" style="min-width: 280px;">
-    <div class="input-group">
+  <div class="position-relative ms-auto" id="buscadorContainer" style="min-width: 280px; width: 450px;">
+    <div class="input-group input-group-lg">
       <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-      <input type="text" id="buscadorCitas" class="form-control" placeholder="Buscar paciente..." autocomplete="off">
+      <input type="text" id="buscadorCitas" class="form-control form-control-lg" placeholder="Buscar paciente..." autocomplete="off">
     </div>
-    <div id="resultadosBusqueda" class="position-absolute w-100 bg-white border rounded-bottom shadow-sm" style="z-index: 1050; max-height: 350px; overflow-y: auto; display: none;"></div>
+    <div id="resultadosBusqueda" class="position-absolute w-100 bg-white border rounded-bottom shadow-sm" style="z-index: 1050; max-height: 400px; overflow-y: auto; display: none;"></div>
   </div>
 </div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
 
 <style>
+  /* Buscador responsive */
+  @media (max-width: 767px) {
+    #buscadorContainer {
+      width: 100% !important;
+      min-width: unset !important;
+    }
+  }
+
+  /* Modales fullscreen en móvil para facilidad de uso */
+  @media (max-width: 767px) {
+    #citaModal .modal-dialog,
+    #confirmModal .modal-dialog {
+      margin: 0;
+      max-width: 100%;
+      min-height: 100vh;
+    }
+    #citaModal .modal-content,
+    #confirmModal .modal-content {
+      min-height: 100vh;
+      border-radius: 0;
+      border: none;
+    }
+    #citaModal .modal-body {
+      padding: 1.5rem;
+      font-size: 1.1rem;
+    }
+    #citaModal .modal-body .form-control,
+    #citaModal .modal-body .form-select {
+      font-size: 1.1rem;
+      padding: 0.75rem;
+    }
+    #citaModal .modal-body .form-label {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    #citaModal .modal-footer .btn {
+      font-size: 1.1rem;
+      padding: 0.75rem 1.5rem;
+    }
+  }
+
   /* Estilos mejorados para las citas con colores por profesional */
   .cita {
     border-radius: 4px;
