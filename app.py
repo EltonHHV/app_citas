@@ -459,6 +459,52 @@ def autocomplete_paciente():
     return jsonify([f["nombre"] for f in filas])
 
 
+@app.route("/buscar_citas")
+def buscar_citas():
+    doctor_id = session.get("doctor_id")
+    q = request.args.get("q", "").strip()
+    if not q or not doctor_id:
+        return jsonify([])
+
+    conn = get_db_connection()
+    doctor_data = conn.table('doctores').select('doctores', 'consultorio_id', 'sedes').eq('id', doctor_id).execute().data
+    if not doctor_data:
+        return jsonify([])
+
+    doctor_name = doctor_data[0]['doctores']
+    consultorio_id = doctor_data[0]['consultorio_id']
+    tiene_sedes = doctor_data[0]['sedes'] == 'SI'
+
+    if tiene_sedes:
+        nombres_doctores = [d['doctores'] for d in conn.table('doctores').select('doctores').eq('consultorio_id', consultorio_id).execute().data]
+        citas = conn.table('citas').select('id, Paciente, Motivo, Celular, Fecha, Hora, Doctor, consultorio_id').ilike('Paciente', f'%{q}%').in_('Doctor', nombres_doctores).order('Fecha', desc=True).limit(20).execute().data
+    else:
+        citas = conn.table('citas').select('id, Paciente, Motivo, Celular, Fecha, Hora, Doctor, consultorio_id').ilike('Paciente', f'%{q}%').eq('Doctor', doctor_name).order('Fecha', desc=True).limit(20).execute().data
+
+    # Obtener nacionalidad de los consultorios
+    todos_consultorios = conn.table('consultorios').select('id, nombre, nacionalidad').execute().data
+    consultorios_dict = {c['id']: c for c in todos_consultorios}
+
+    resultados = []
+    for c in citas:
+        cid = c.get('consultorio_id')
+        nac = consultorios_dict.get(cid, {}).get('nacionalidad', 'Peru')
+        cons_nombre = consultorios_dict.get(cid, {}).get('nombre', '')
+        resultados.append({
+            'id': c['id'],
+            'paciente': c['Paciente'],
+            'motivo': c['Motivo'],
+            'celular': c['Celular'],
+            'fecha': c['Fecha'],
+            'hora': c['Hora'],
+            'doctor': c['Doctor'],
+            'nacionalidad': nac,
+            'consultorio_nombre': cons_nombre
+        })
+
+    return jsonify(resultados)
+
+
 @app.route("/telefono_paciente")
 def telefono_paciente():
     nombre = request.args.get("nombre", "").strip()

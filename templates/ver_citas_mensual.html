@@ -27,14 +27,25 @@
 </div>
 {% endif %}
 
-<form method="POST" class="mb-3 d-flex align-items-center gap-2">
-  <input type="hidden" name="visible_month" value="{{ start_of_month.strftime('%Y-%m-%d') }}">
-  <button type="submit" name="action" value="prev_month" class="btn btn-celeste">Mes Anterior</button>
-  <button type="submit" name="action" value="current_month" class="btn btn-outline-primary">
-    <i class="bi bi-calendar-event"></i> Hoy
-  </button>
-  <button type="submit" name="action" value="next_month" class="btn btn-celeste">Mes Siguiente</button>
-</form>
+<div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+  <form method="POST" class="d-flex align-items-center gap-2">
+    <input type="hidden" name="visible_month" value="{{ start_of_month.strftime('%Y-%m-%d') }}">
+    <button type="submit" name="action" value="prev_month" class="btn btn-celeste">Mes Anterior</button>
+    <button type="submit" name="action" value="current_month" class="btn btn-outline-primary">
+      <i class="bi bi-calendar-event"></i> Hoy
+    </button>
+    <button type="submit" name="action" value="next_month" class="btn btn-celeste">Mes Siguiente</button>
+  </form>
+
+  <!-- Buscador de citas -->
+  <div class="position-relative ms-auto" style="min-width: 280px;">
+    <div class="input-group">
+      <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+      <input type="text" id="buscadorCitas" class="form-control" placeholder="Buscar paciente..." autocomplete="off">
+    </div>
+    <div id="resultadosBusqueda" class="position-absolute w-100 bg-white border rounded-bottom shadow-sm" style="z-index: 1050; max-height: 350px; overflow-y: auto; display: none;"></div>
+  </div>
+</div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/ver_citas.css') }}">
 
@@ -524,6 +535,71 @@
     const doctorSeleccionado = this.value;
     loadHorasModal(fechaSeleccionada, doctorSeleccionado, horaOriginalCita);
   });
+
+  // ============================================================
+  // BUSCADOR DE CITAS POR NOMBRE DE PACIENTE
+  // ============================================================
+  (function() {
+    const input = document.getElementById('buscadorCitas');
+    const resultados = document.getElementById('resultadosBusqueda');
+    let timeout = null;
+
+    input.addEventListener('input', function() {
+      clearTimeout(timeout);
+      const q = this.value.trim();
+      if (q.length < 2) {
+        resultados.style.display = 'none';
+        resultados.innerHTML = '';
+        return;
+      }
+      timeout = setTimeout(() => {
+        fetch(`/buscar_citas?q=${encodeURIComponent(q)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.length === 0) {
+              resultados.innerHTML = '<div class="p-3 text-muted text-center">No se encontraron citas</div>';
+              resultados.style.display = 'block';
+              return;
+            }
+            let html = '';
+            data.forEach(cita => {
+              html += `<div class="p-2 border-bottom busqueda-item" style="cursor:pointer;"
+                data-id="${cita.id}"
+                data-paciente="${cita.paciente}"
+                data-motivo="${cita.motivo}"
+                data-celular="${cita.celular}"
+                data-doctor="${cita.doctor}"
+                data-fecha="${cita.fecha}"
+                data-hora="${cita.hora}"
+                data-nacionalidad="${cita.nacionalidad}"
+                data-consultorio-nombre="${cita.consultorio_nombre}">
+                <div class="fw-bold">${cita.paciente}</div>
+                <small class="text-muted">${cita.fecha} - ${cita.hora} | ${cita.motivo}</small>
+                <small class="d-block text-secondary">${cita.doctor}</small>
+              </div>`;
+            });
+            resultados.innerHTML = html;
+            resultados.style.display = 'block';
+
+            // Click en resultado abre el modal de edición
+            resultados.querySelectorAll('.busqueda-item').forEach(item => {
+              item.addEventListener('click', function() {
+                fillEditModal(this);
+                resultados.style.display = 'none';
+                input.value = '';
+              });
+            });
+          });
+      }, 300);
+    });
+
+    // Cerrar resultados al hacer click fuera
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !resultados.contains(e.target)) {
+        resultados.style.display = 'none';
+      }
+    });
+  })();
 </script>
 
 {% endblock %}
