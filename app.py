@@ -15,6 +15,8 @@ import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, session
 from supabase import create_client, Client
 from functools import wraps
+from werkzeug.exceptions import HTTPException
+import traceback
 
 
 app = Flask(__name__)
@@ -26,6 +28,24 @@ app.secret_key = 'xddx'  # Cambia esto por una clave secreta real
 
 # Crear cliente de Supabase
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Manejadores de Errores Globales
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    
+    # Loguear el error en la consola
+    app.logger.error(f"Excepción no manejada: {e}")
+    app.logger.error(traceback.format_exc())
+    
+    # Mostrar página de error personalizada
+    return render_template("error.html"), 500
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template("error.html"), 500
 
 # Método para interactuar con la base de datos
 
