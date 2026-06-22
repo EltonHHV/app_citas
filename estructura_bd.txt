@@ -1,0 +1,626 @@
+
+======================================================================
+📦 TABLA: motivoconsulta
+======================================================================
+
+🧱 COLUMNAS:
+   - id (bigint)
+   - descripcion (text)
+   - especialidad (text)
+
+📄 REGISTROS:
+   Mostrando 2 registros de muestra:
+
+   Registro 1
+{
+    "id": 1,
+    "descripcion": "CONSULTA DENTAL",
+    "especialidad": "Dental"
+}
+
+   Registro 2
+{
+    "id": 2,
+    "descripcion": "CURACION DENTAL",
+    "especialidad": "Dental"
+}
+
+
+======================================================================
+📦 TABLA: consultorios
+======================================================================
+
+🧱 COLUMNAS:
+   - id (integer)
+   - nombre (character varying)
+   - especialidad (text)
+   - nacionalidad (text)
+
+📄 REGISTROS:
+   Mostrando 2 registros de muestra:
+
+   Registro 1
+{
+    "id": 1,
+    "nombre": "GODENTAL",
+    "especialidad": "Dental",
+    "nacionalidad": "Peru"
+}
+
+   Registro 2
+{
+    "id": 2,
+    "nombre": "VIRODENT",
+    "especialidad": "Dental",
+    "nacionalidad": "Peru"
+}
+
+
+======================================================================
+📦 TABLA: citas
+======================================================================
+
+🧱 COLUMNAS:
+   - id (bigint)
+   - Fecha (text)
+   - Hora (text)
+   - Motivo (text)
+   - Celular (text)
+   - Doctor (text)
+   - Paciente (text)
+   - Asistencia (text)
+   - consultorio_id (integer)
+
+📄 REGISTROS:
+   Mostrando últimos 20 registros:
+
+   Registro 1
+{
+    "id": 15900,
+    "Fecha": "2026-06-22",
+    "Hora": "09:30 AM",
+    "Motivo": "Consulta Dental, evaluación",
+    "Celular": "931934473",
+    "Doctor": "PACIFICO",
+    "Paciente": "Nayeli Annabell Catagua Valencia",
+    "Asistencia": "false",
+    "consultorio_id": 19
+}
+
+   Registro 2
+{
+    "id": 15899,
+    "Fecha": "2026-06-27",
+    "Hora": "06:00 PM",
+    "Motivo": "Brackets",
+    "Celular": "946002264",
+    "Doctor": "PACIFICO",
+    "Paciente": "Yesenia Quezada",
+    "Asistencia": "false",
+    "consultorio_id": 19
+}
+
+   Registro 3
+{
+    "id": 15898,
+    "Fecha": "2026-06-22",
+    "Hora": "06:30 PM",
+    "Motivo": "Botox",
+    "Celular": "933051845",
+    "Doctor": "Asistente",
+    "Paciente": "Grace",
+    "Asistencia": "false",
+    "consultorio_id": 26
+}
+
+   Registro 4
+{
+    "id": 15897,
+    "Fecha": "2026-07-22",
+    "Hora": "10:00 AM",
+    "Motivo": "Endodoncia",
+    "Celular": "961261092",
+    "Doctor": "PACIFICO",
+    "Paciente": "Carlos Sánchez rodriguez",
+    "Asistencia": "false",
+    "consultorio_id": 19
+}
+
+   Registro 5
+{
+    "id": 15896,
+    "Fecha": "2026-07-02",
+    "Hora": "10:00 AM",
+    "Motivo": "Consulta Dental, evaluación",
+    "Celular": "977119292",
+    "Doctor": "PACIFICO",
+    "Paciente": "Julio Enrique Muñoz Santisteban",
+    "Asistencia": "false",
+    "consultorio_id": 19
+}
+
+   Registro 6
+{
+    "id": 15895,
+    "Fecha": "2026-06-27",
+    "Hora": "09:00 AM",
+    "Motivo": "Realización de carillas de resina",
+    "Celular": "918369968",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Sánchez Vásquez Nehemías Caleb",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 7
+{
+    "id": 15894,
+    "Fecha": "2026-06-23",
+    "Hora": "09:30 AM",
+    "Motivo": "CURACION DENTAL",
+    "Celular": "922884411",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Enríquez Laiza Dina Arelí",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 8
+{
+    "id": 15893,
+    "Fecha": "2026-06-23",
+    "Hora": "11:00 AM",
+    "Motivo": "Prueba de prótesis fija",
+    "Celular": "957678040",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Escobedo Mozo Henry",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 9
+{
+    "id": 15892,
+    "Fecha": "2026-07-01",
+    "Hora": "10:00 AM",
+    "Motivo": "CURACION DENTAL",
+    "Celular": "977853208",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Santa Cruz Patricio César",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 10
+{
+    "id": 15891,
+    "Fecha": "2026-06-27",
+    "Hora": "04:00 PM",
+    "Motivo": "Impresión para corona",
+    "Celular": "939349856",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Julca Arteaga Josué",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 11
+{
+    "id": 15890,
+    "Fecha": "2026-06-23",
+    "Hora": "04:00 PM",
+    "Motivo": "Control de diente tratado",
+    "Celular": "945771680",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Almendras Iparraguirre Jorge Luís",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 12
+{
+    "id": 15889,
+    "Fecha": "2026-06-22",
+    "Hora": "05:00 PM",
+    "Motivo": "Mantenimiento de carillas",
+    "Celular": "918815450",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Rodríguez Sandoval Gloria",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 13
+{
+    "id": 15888,
+    "Fecha": "2026-07-01",
+    "Hora": "04:00 PM",
+    "Motivo": "CURACION DENTAL",
+    "Celular": "943664103",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Cruz Solís Arquipo Victor",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 14
+{
+    "id": 15887,
+    "Fecha": "2026-06-23",
+    "Hora": "06:00 PM",
+    "Motivo": "Presupuesto de tratamiento",
+    "Celular": "994277781",
+    "Doctor": "Dr. Raul",
+    "Paciente": "Aurea Burgos",
+    "Asistencia": "false",
+    "consultorio_id": 4
+}
+
+   Registro 15
+{
+    "id": 15886,
+    "Fecha": "2026-06-26",
+    "Hora": "10:00 AM",
+    "Motivo": "2 L.SEMI S/D",
+    "Celular": "937458210",
+    "Doctor": "DRA. GREISY GALLOSO",
+    "Paciente": "ALEXIS ALVARADO ---JEAMPOOL SANTA CRUZ",
+    "Asistencia": "false",
+    "consultorio_id": 24
+}
+
+   Registro 16
+{
+    "id": 15885,
+    "Fecha": "2026-06-22",
+    "Hora": "06:00 PM",
+    "Motivo": "DRENAJE LINFÁTICO FACIAL",
+    "Celular": "931201074",
+    "Doctor": "DIANA",
+    "Paciente": "KIMBERLY LEYVA",
+    "Asistencia": "false",
+    "consultorio_id": 25
+}
+
+   Registro 17
+{
+    "id": 15884,
+    "Fecha": "2026-06-20",
+    "Hora": "07:00 PM",
+    "Motivo": "Curación dental",
+    "Celular": "952878278",
+    "Doctor": "PACIFICO",
+    "Paciente": "Jose rodriguez",
+    "Asistencia": "false",
+    "consultorio_id": 19
+}
+
+   Registro 18
+{
+    "id": 15883,
+    "Fecha": "2026-07-01",
+    "Hora": "06:00 PM",
+    "Motivo": "BOTOX---abono 350",
+    "Celular": "994213866",
+    "Doctor": "DRA. GREISY GALLOSO",
+    "Paciente": "ELIANE LECCA",
+    "Asistencia": "false",
+    "consultorio_id": 24
+}
+
+   Registro 19
+{
+    "id": 15882,
+    "Fecha": "2026-06-27",
+    "Hora": "09:00 AM",
+    "Motivo": "EVALUACION REJUVCHIP",
+    "Celular": "934577666",
+    "Doctor": "DRA. ELVIANYS TORO",
+    "Paciente": "ALICIA SANDOVAL --ALEJANDRO ROJAS",
+    "Asistencia": "false",
+    "consultorio_id": 24
+}
+
+   Registro 20
+{
+    "id": 15881,
+    "Fecha": "2026-06-23",
+    "Hora": "09:00 AM",
+    "Motivo": "RETOQUE A.H",
+    "Celular": "951921707",
+    "Doctor": "DRA. ELVIANYS TORO",
+    "Paciente": "ERICA MENDOZA",
+    "Asistencia": "false",
+    "consultorio_id": 24
+}
+
+
+======================================================================
+📦 TABLA: historia_clinica
+======================================================================
+
+🧱 COLUMNAS:
+   - id (bigint)
+   - nombre (text)
+   - dni (bigint)
+   - telefono (text)
+   - doctor_id (integer)
+
+📄 REGISTROS:
+   Mostrando 2 registros de muestra:
+
+   Registro 1
+{
+    "id": 43,
+    "nombre": "LUZMILA TORRES ENRIQUE",
+    "dni": 32899048,
+    "telefono": "933881738",
+    "doctor_id": 1
+}
+
+   Registro 2
+{
+    "id": 44,
+    "nombre": "LIZZBET VICENTA RODRIGUEZ MONTAÑEZ",
+    "dni": 44349593,
+    "telefono": "906413396",
+    "doctor_id": 1
+}
+
+
+======================================================================
+📦 TABLA: doctores
+======================================================================
+
+🧱 COLUMNAS:
+   - id (bigint)
+   - doctores (text)
+   - color (text)
+   - password (text)
+   - consultorio_id (integer)
+   - pago (boolean)
+   - especialidad (text)
+   - sedes (text)
+
+📄 REGISTROS:
+   Mostrando últimos 20 registros:
+
+   Registro 1
+{
+    "id": 43,
+    "doctores": "Asistente",
+    "color": "Azul",
+    "password": "meliderma098",
+    "consultorio_id": 26,
+    "pago": true,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 2
+{
+    "id": 42,
+    "doctores": "Dra. Melissa Palacios",
+    "color": "Morado",
+    "password": "meliderma098",
+    "consultorio_id": 26,
+    "pago": true,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 3
+{
+    "id": 41,
+    "doctores": "ESTETICA2",
+    "color": "Verde",
+    "password": "Elvianis_789",
+    "consultorio_id": 24,
+    "pago": true,
+    "especialidad": "ESTETICA2",
+    "sedes": "SI"
+}
+
+   Registro 4
+{
+    "id": 40,
+    "doctores": "NICOL",
+    "color": "Morado",
+    "password": "Elvi_masajes_678",
+    "consultorio_id": 25,
+    "pago": true,
+    "especialidad": "MASAJES",
+    "sedes": "SI"
+}
+
+   Registro 5
+{
+    "id": 39,
+    "doctores": "ROSA",
+    "color": "Rosado",
+    "password": "Elvi_masajes_678",
+    "consultorio_id": 25,
+    "pago": true,
+    "especialidad": "MASAJES",
+    "sedes": "SI"
+}
+
+   Registro 6
+{
+    "id": 38,
+    "doctores": "DIANA",
+    "color": "Azul",
+    "password": "Elvi_masajes_678",
+    "consultorio_id": 25,
+    "pago": true,
+    "especialidad": "MASAJES",
+    "sedes": "SI"
+}
+
+   Registro 7
+{
+    "id": 37,
+    "doctores": "DRA. GREISY GALLOSO",
+    "color": "Rosado",
+    "password": "Elvianis_789",
+    "consultorio_id": 24,
+    "pago": true,
+    "especialidad": "ESTETICA2",
+    "sedes": "SI"
+}
+
+   Registro 8
+{
+    "id": 36,
+    "doctores": "DRA. ELVIANYS TORO",
+    "color": "Azul",
+    "password": "Elvianis_789",
+    "consultorio_id": 24,
+    "pago": true,
+    "especialidad": "ESTETICA2",
+    "sedes": "SI"
+}
+
+   Registro 9
+{
+    "id": 35,
+    "doctores": "GLOW",
+    "color": "Azul",
+    "password": "glow125",
+    "consultorio_id": 23,
+    "pago": true,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 10
+{
+    "id": 34,
+    "doctores": "Obstetricia",
+    "color": "Rosado",
+    "password": "Obstetricia123",
+    "consultorio_id": 22,
+    "pago": true,
+    "especialidad": "Obstetricia",
+    "sedes": "SI"
+}
+
+   Registro 11
+{
+    "id": 33,
+    "doctores": "BELVIVA",
+    "color": "Rosado",
+    "password": "belviva123",
+    "consultorio_id": 21,
+    "pago": true,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 12
+{
+    "id": 32,
+    "doctores": "Dra. Ramirez",
+    "color": "Azul",
+    "password": "ramirez123",
+    "consultorio_id": 20,
+    "pago": false,
+    "especialidad": "Dental",
+    "sedes": "SI"
+}
+
+   Registro 13
+{
+    "id": 31,
+    "doctores": "PACIFICO",
+    "color": "Azul",
+    "password": "pacifico123",
+    "consultorio_id": 19,
+    "pago": true,
+    "especialidad": "Dental",
+    "sedes": "SI"
+}
+
+   Registro 14
+{
+    "id": 30,
+    "doctores": "VASALUD",
+    "color": "Rosado",
+    "password": "vasalud123",
+    "consultorio_id": 18,
+    "pago": true,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 15
+{
+    "id": 29,
+    "doctores": "AUTOPASION",
+    "color": "Azul",
+    "password": "autopasion123",
+    "consultorio_id": 17,
+    "pago": true,
+    "especialidad": "AUTOMOTRIZ",
+    "sedes": "SI"
+}
+
+   Registro 16
+{
+    "id": 28,
+    "doctores": "Asistente",
+    "color": "Azul",
+    "password": "meliderma_678",
+    "consultorio_id": 16,
+    "pago": false,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 17
+{
+    "id": 27,
+    "doctores": "Dra. Melissa Palacios",
+    "color": "Morado",
+    "password": "meliderma_678",
+    "consultorio_id": 16,
+    "pago": false,
+    "especialidad": "ESTETICA",
+    "sedes": "SI"
+}
+
+   Registro 18
+{
+    "id": 26,
+    "doctores": "Obst. Rosemary",
+    "color": "Rosado",
+    "password": "de_mujer_456",
+    "consultorio_id": 15,
+    "pago": true,
+    "especialidad": "Obstetricia",
+    "sedes": "SI"
+}
+
+   Registro 19
+{
+    "id": 25,
+    "doctores": "CHIMBOTE",
+    "color": "Morado",
+    "password": "naty_pro_953",
+    "consultorio_id": 14,
+    "pago": true,
+    "especialidad": "PROMUJER",
+    "sedes": "SI"
+}
+
+   Registro 20
+{
+    "id": 24,
+    "doctores": "NUEVO CHIMBOTE",
+    "color": "Rosado",
+    "password": "naty_pro_953",
+    "consultorio_id": 14,
+    "pago": true,
+    "especialidad": "PROMUJER",
+    "sedes": "SI"
+}

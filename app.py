@@ -630,111 +630,103 @@ def ver_citas_mensual():
         flash("Por favor, inicie sesión", "warning")
         return redirect(url_for("login"))
 
-    # Obtener el nombre del doctor y verificar si maneja múltiples sedes
     conn = get_db_connection()
-    doctor_data = conn.table('doctores').select('doctores', 'consultorio_id', 'sedes').eq('id', doctor_id).execute().data
-    
-    if not doctor_data:
-        flash("Doctor no encontrado", "error")
-        return redirect(url_for("login"))
-    
-    doctor_name = doctor_data[0]['doctores']
-    consultorio_id = doctor_data[0]['consultorio_id']
-    tiene_sedes = doctor_data[0]['sedes'] == 'SI'
-    
-    # Imprimir el consultorio_id en la consola
+    try:
+        # 1. Obtener el nombre del doctor y verificar si maneja múltiples sedes
+        doctor_data = conn.table('doctores').select('doctores, consultorio_id, sedes').eq('id', doctor_id).execute().data
+        
+        if not doctor_data:
+            flash("Doctor no encontrado", "error")
+            return redirect(url_for("login"))
+        
+        doctor_name = doctor_data[0]['doctores']
+        consultorio_id = doctor_data[0]['consultorio_id']
+        tiene_sedes = doctor_data[0]['sedes'] == 'SI'
 
-    # Obtener información del consultorio del doctor logueado
-    consultorio_data = conn.table('consultorios').select('nombre', 'nacionalidad').eq('id', consultorio_id).execute().data
-    consultorio_nombre = consultorio_data[0]['nombre'] if consultorio_data else "Nuestra clínica"
+        # 2. Obtener información del consultorio del doctor logueado
+        consultorio_data = conn.table('consultorios').select('nombre, nacionalidad').eq('id', consultorio_id).execute().data
+        consultorio_nombre_db = consultorio_data[0]['nombre'] if consultorio_data else "Nuestra clínica"
 
-    # ✅ NUEVO: Obtener todos los consultorios para mapear nacionalidades
-    todos_consultorios = conn.table('consultorios').select('id', 'nombre', 'nacionalidad').execute().data
-    consultorios_dict = {c['id']: c for c in todos_consultorios}
+        # ✅ Obtener todos los consultorios para mapear nacionalidades correctamente 
+        # (se respeta la estructura original para citas de otros consultorios)
+        todos_consultorios = conn.table('consultorios').select('id, nombre, nacionalidad').execute().data
+        consultorios_dict = {c['id']: c for c in todos_consultorios}
 
-    # Mapeo de nombres de colores en español a códigos hexadecimales
-    COLORES_HEX = {
-        'Azul': "#ABCDF4",
-        'Morado': "#E0A7F7",
-        'Verde': '#27AE60',
-        'Rojo': '#E74C3C',
-        'Naranja': '#F39C12',
-        'Rosado': '#FF69B4',
-        'Celeste': '#87CEEB',
-        'Amarillo': '#F1C40F',
-        'Gris': '#95A5A6',
-        'Turquesa': '#1ABC9C'
-    }
-
-    # Si tiene_sedes = SI, obtener todos los doctores del mismo consultorio con sus colores
-    if tiene_sedes:
-        doctores_del_consultorio = conn.table('doctores').select('doctores', 'color').eq('consultorio_id', consultorio_id).execute().data
-        nombres_doctores = [d['doctores'] for d in doctores_del_consultorio]
-        colores_doctores = {
-            d['doctores']: COLORES_HEX.get(d['color'], '#95A5A6') 
-            for d in doctores_del_consultorio
+        # Mapeo de nombres de colores en español a códigos hexadecimales
+        COLORES_HEX = {
+            'Azul': "#ABCDF4", 'Morado': "#E0A7F7", 'Verde': '#27AE60',
+            'Rojo': '#E74C3C', 'Naranja': '#F39C12', 'Rosado': '#FF69B4',
+            'Celeste': '#87CEEB', 'Amarillo': '#F1C40F', 'Gris': '#95A5A6',
+            'Turquesa': '#1ABC9C'
         }
-        # Obtener doctores para el select del modal de edición
-        doctores_select = conn.table('doctores').select('id, doctores, consultorio_id, sedes')\
-            .eq('consultorio_id', consultorio_id)\
-            .eq('sedes', 'SI')\
-            .execute().data
-    else:
-        nombres_doctores = [doctor_name]
-        colores_doctores = {}
-        # Si no tiene sedes, solo mostrar el doctor actual
-        doctores_select = conn.table('doctores').select('id, doctores, consultorio_id, sedes')\
-            .eq('id', doctor_id)\
-            .execute().data
 
-    hoy = date.today()
-
-    if request.method == "POST":
-        action = request.form.get("action")
-
-        # Acción "current_month": forzar reinicio al mes actual
-        if action == "current_month":
-            start_of_month = hoy.replace(day=1)
+        # 3. Obtener doctores para el consultorio y modal
+        if tiene_sedes:
+            doctores_del_consultorio = conn.table('doctores').select('doctores, color').eq('consultorio_id', consultorio_id).execute().data
+            nombres_doctores = [d['doctores'] for d in doctores_del_consultorio]
+            colores_doctores = {
+                d['doctores']: COLORES_HEX.get(d['color'], '#95A5A6') 
+                for d in doctores_del_consultorio
+            }
+            # Obtener doctores para el select del modal de edición
+            doctores_select = conn.table('doctores').select('id, doctores, consultorio_id, sedes')\
+                .eq('consultorio_id', consultorio_id)\
+                .eq('sedes', 'SI')\
+                .execute().data
         else:
-            # Leer el mes vigente desde el campo oculto del formulario
-            visible_month_str = request.form.get("visible_month", "")
-            if visible_month_str:
-                try:
-                    start_of_month = datetime.strptime(visible_month_str, '%Y-%m-%d').date()
-                except ValueError:
-                    start_of_month = hoy.replace(day=1)
-            else:
+            nombres_doctores = [doctor_name]
+            colores_doctores = {}
+            # Si no tiene sedes, solo mostrar el doctor actual
+            doctores_select = conn.table('doctores').select('id, doctores, consultorio_id, sedes')\
+                .eq('id', doctor_id)\
+                .execute().data
+
+        hoy = date.today()
+
+        if request.method == "POST":
+            action = request.form.get("action")
+            if action == "current_month":
                 start_of_month = hoy.replace(day=1)
-
-            # Navegar al mes siguiente o anterior
-            if action == "next_month":
-                if start_of_month.month == 12:
-                    start_of_month = start_of_month.replace(year=start_of_month.year + 1, month=1, day=1)
+            else:
+                visible_month_str = request.form.get("visible_month", "")
+                if visible_month_str:
+                    try:
+                        start_of_month = datetime.strptime(visible_month_str, '%Y-%m-%d').date()
+                    except ValueError:
+                        start_of_month = hoy.replace(day=1)
                 else:
-                    start_of_month = start_of_month.replace(month=start_of_month.month + 1, day=1)
-            elif action == "prev_month":
-                if start_of_month.month == 1:
-                    start_of_month = start_of_month.replace(year=start_of_month.year - 1, month=12, day=1)
-                else:
-                    start_of_month = start_of_month.replace(month=start_of_month.month - 1, day=1)
-    else:
-        # GET: siempre reiniciar al mes actual
-        start_of_month = hoy.replace(day=1)
+                    start_of_month = hoy.replace(day=1)
 
-    # Obtener citas para este mes
-    last_day_of_month = calendar.monthrange(start_of_month.year, start_of_month.month)[1]
-    end_of_month = start_of_month.replace(day=last_day_of_month)
+                if action == "next_month":
+                    if start_of_month.month == 12:
+                        start_of_month = start_of_month.replace(year=start_of_month.year + 1, month=1, day=1)
+                    else:
+                        start_of_month = start_of_month.replace(month=start_of_month.month + 1, day=1)
+                elif action == "prev_month":
+                    if start_of_month.month == 1:
+                        start_of_month = start_of_month.replace(year=start_of_month.year - 1, month=12, day=1)
+                    else:
+                        start_of_month = start_of_month.replace(month=start_of_month.month - 1, day=1)
+        else:
+            start_of_month = hoy.replace(day=1)
 
-    # ✅ MODIFICADO: Incluir consultorio_id en el select
-    query = conn.table('citas').select('id', 'Fecha', 'Hora', 'Motivo', 'Celular', 'Doctor', 'Paciente', 'consultorio_id') \
-        .gte('Fecha', start_of_month).lte('Fecha', end_of_month)
-    
-    if len(nombres_doctores) == 1:
-        query = query.eq('Doctor', nombres_doctores[0])
-    else:
-        query = query.in_('Doctor', nombres_doctores)
-    
-    filas = query.execute().data
+        last_day_of_month = calendar.monthrange(start_of_month.year, start_of_month.month)[1]
+        end_of_month = start_of_month.replace(day=last_day_of_month)
+
+        # 4. Obtener citas para este mes respetando el filtrado por "Doctor"
+        query = conn.table('citas').select('id, Fecha, Hora, Motivo, Celular, Doctor, Paciente, consultorio_id') \
+            .gte('Fecha', start_of_month).lte('Fecha', end_of_month)
+        
+        if len(nombres_doctores) == 1:
+            query = query.eq('Doctor', nombres_doctores[0])
+        else:
+            query = query.in_('Doctor', nombres_doctores)
+        
+        filas = query.execute().data
+
+    except Exception as e:
+        flash("Error de conexión al cargar citas. Intente nuevamente más tarde.", "danger")
+        return redirect(url_for("inicio"))
 
     tz_peru = pytz.timezone('America/Lima')
 
@@ -746,36 +738,23 @@ def ver_citas_mensual():
 
         hora = c["Hora"]
         key = fecha.strftime('%Y-%m-%d')
-        ocupadas[key] = ocupadas.get(key, [])
+        ocupadas.setdefault(key, [])
         
-        # ✅ NUEVO: Agregar nacionalidad y nombre del consultorio de la cita
         cita_consultorio_id = c.get('consultorio_id')
-
-        # Asegurarse de que el ID del consultorio sea un número entero para evitar comparaciones incorrectas
-
-        # Convertir el ID a int (si es necesario) para asegurarnos de que sea comparable con las claves en el diccionario
         cita_consultorio_id = int(cita_consultorio_id) if cita_consultorio_id else None
 
-        # Verificar que el ID está bien convertido a entero
-
-        # Si el consultorio_id es 13, asignamos directamente 'Chile'
         if cita_consultorio_id == 13:
             nacionalidad_cita = 'Chile'
-            consultorio_nombre_cita = "la CLINICA DENTAL SOMI"  # Asignamos un nombre de consultorio para Chile
+            consultorio_nombre_cita = "la CLINICA DENTAL SOMI"
         else:
-            # Verificar si el consultorio ID está en el diccionario de consultorios
             if cita_consultorio_id and cita_consultorio_id in consultorios_dict:
-                consultorio_info = consultorios_dict[cita_consultorio_id]  # Accedemos al consultorio
-
-
-                nacionalidad_cita = consultorio_info['nacionalidad']
-                consultorio_nombre_cita = consultorio_info['nombre']  # Asignamos el nombre del consultorio encontrado
+                consultorio_info = consultorios_dict[cita_consultorio_id]
+                nacionalidad_cita = consultorio_info.get('nacionalidad', 'Peru')
+                consultorio_nombre_cita = consultorio_info.get('nombre', 'Nuestra clínica')
             else:
-                # Si el consultorio no se encuentra, asignamos la nacionalidad por defecto como Perú
-                nacionalidad_cita = 'Peru'  # Default es Perú
-                consultorio_nombre_cita = consultorio_nombre  # Usamos el nombre del consultorio predeterminado
+                nacionalidad_cita = 'Peru'
+                consultorio_nombre_cita = consultorio_nombre_db
 
-        # Agregar la cita a las ocupadas
         ocupadas[key].append({
             "id": c["id"],
             "paciente": c["Paciente"],
@@ -784,8 +763,8 @@ def ver_citas_mensual():
             "doctor": c["Doctor"],
             "fecha": fecha,
             "hora": hora,
-            "nacionalidad": nacionalidad_cita,  # ✅ NUEVO
-            "consultorio_nombre": consultorio_nombre_cita  # ✅ NUEVO
+            "nacionalidad": nacionalidad_cita,
+            "consultorio_nombre": consultorio_nombre_cita
         })
 
     for fecha, citas in ocupadas.items():
@@ -810,23 +789,20 @@ def ver_citas_mensual():
         weeks.append(week)
         first_day_of_week = 0
 
-    hoy = datetime.now(tz_peru).date()
-
-    consultorio_nombre = CONSULTORIOS.get(consultorio_id, "Nuestra clínica")  # Valor predeterminado si no se encuentra el consultorio
-
-    print("Consultorio consultorio_nombre:", consultorio_nombre)
+    hoy_actual = datetime.now(tz_peru).date()
+    consultorio_nombre_final = CONSULTORIOS.get(consultorio_id, consultorio_nombre_db)
 
     return render_template(
         "ver_citas_mensual.html",
         start_of_month=start_of_month,
         weeks=weeks,
         ocupadas=ocupadas,
-        today=hoy,
-        consultorio=consultorio_nombre,  # Nombre del consultorio del doctor logueado
-        consultorio_id=consultorio_id,  # Pasamos el consultorio_id
+        today=hoy_actual,
+        consultorio=consultorio_nombre_final,
+        consultorio_id=consultorio_id,
         tiene_sedes=tiene_sedes,
         colores_doctores=colores_doctores,
-        doctores_select=doctores_select,  # Lista de doctores para el select del modal
+        doctores_select=doctores_select,
     )
 
 
